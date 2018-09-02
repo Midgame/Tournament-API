@@ -17,4 +17,7 @@ func TestRegisterUser(t *testing.T) {
 	if len(bot.Claims) != 0 {
 		t.Errorf("Bot somehow started out with claims immediately after registration")
 	}
+	if bot.Location.X != 0 || bot.Location.Y != 0 {
+		t.Errorf("Bot wasn't initialized with a location properly")
+	}
 }

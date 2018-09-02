@@ -18,6 +18,10 @@ func RegisterUser() (structs.Bot, Response) {
 		GridEntity: structs.GridEntity{
 			Id:   uuid,
 			Type: structs.BOT,
+			Location: structs.GridLocation{
+				X: 0,
+				Y: 0,
+			},
 		},
 		Claims: []string{},
 	}
