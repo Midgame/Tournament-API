@@ -14,16 +14,6 @@ var (
 	knownBots map[string]structs.Bot = make(map[string]structs.Bot)
 )
 
-// knownBotCount returns a count of the number of known bots
-func knownBotCount() int {
-	return len(knownBots)
-}
-
-// fetchBot is an internal helper method for fetching a bot out of the map structure
-func fetchBot(uuid string) structs.Bot {
-	return knownBots[uuid]
-}
-
 // RegistrationHandler accepts registration from a new bot. It generates a UUID for the user, registers it,
 // and returns the UUID to the user
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
