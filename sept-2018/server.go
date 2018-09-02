@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 var (
-	knownBots map[string]bool = make(map[string]bool)
+	knownBots map[string]structs.Bot = make(map[string]structs.Bot)
 )
 
 type Status struct {
@@ -21,11 +23,22 @@ func knownBotCount() int {
 	return len(knownBots)
 }
 
+// fetchBot is an internal helper method for fetching a bot out of the map structure
+func fetchBot(uuid string) structs.Bot {
+	return knownBots[uuid]
+}
+
 // registerUser generates a new UUID for a user, adds that UUID to the list of known bots,
 // and then returns the UUID.
 func registerUser() string {
 	uuid := uuid.New().String()
-	knownBots[uuid] = true
+	knownBots[uuid] = structs.Bot{
+		GridEntity: structs.GridEntity{
+			Id:   uuid,
+			Type: structs.BOT,
+		},
+		Claims: []string{},
+	}
 
 	return uuid
 }
