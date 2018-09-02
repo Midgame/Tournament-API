@@ -10,8 +10,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	GRID_WIDTH  = 100
+	GRID_HEIGHT = 100
+)
+
 var (
 	knownBots map[string]structs.Bot = make(map[string]structs.Bot)
+	grid      structs.Grid           = structs.Grid{Width: GRID_WIDTH, Height: GRID_HEIGHT, Entities: [][]structs.GridEntity{}}
 )
 
 // RegistrationHandler accepts registration from a new bot. It generates a UUID for the user, registers it,

@@ -10,3 +10,9 @@ type GridEntity struct {
 	Type EntityType
 	Id   string
 }
+
+type Grid struct {
+	Width    uint64
+	Height   uint64
+	Entities [][]GridEntity
+}
