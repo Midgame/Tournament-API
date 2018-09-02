@@ -4,19 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/HeadlightLabs/Tournament-API/sept-2018/handlers"
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 var (
 	knownBots map[string]structs.Bot = make(map[string]structs.Bot)
 )
-
-type Status struct {
-	Uuid string
-}
 
 // knownBotCount returns a count of the number of known bots
 func knownBotCount() int {
@@ -28,28 +24,13 @@ func fetchBot(uuid string) structs.Bot {
 	return knownBots[uuid]
 }
 
-// registerUser generates a new UUID for a user, adds that UUID to the list of known bots,
-// and then returns the UUID.
-func registerUser() string {
-	uuid := uuid.New().String()
-	knownBots[uuid] = structs.Bot{
-		GridEntity: structs.GridEntity{
-			Id:   uuid,
-			Type: structs.BOT,
-		},
-		Claims: []string{},
-	}
-
-	return uuid
-}
-
 // RegistrationHandler accepts registration from a new bot. It generates a UUID for the user, registers it,
 // and returns the UUID to the user
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
-	uuid := registerUser()
+	bot, response := handlers.RegisterUser()
+	knownBots[bot.Id] = bot
 
-	status := Status{Uuid: uuid}
-	json.NewEncoder(w).Encode(status)
+	json.NewEncoder(w).Encode(response)
 }
 
 func main() {
