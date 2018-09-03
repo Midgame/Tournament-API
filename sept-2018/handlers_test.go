@@ -85,6 +85,51 @@ func TestRelease(t *testing.T) {
 
 }
 
+func TestClaim(t *testing.T) {
+	knownBots := make(map[string]structs.Bot)
+	knownBots["alpha"] = createBot("alpha", []string{"gamma"})
+	knownBots["beta"] = createBot("beta", []string{"delta"})
+
+	knownNodes := make(map[string]structs.Node)
+	knownNodes["gamma"] = createNode("gamma", "alpha")
+	knownNodes["delta"] = createNode("delta", "beta")
+	knownNodes["epsilon"] = createNode("epsilon", "")
+
+	unclaimedResult := handlers.Claim("alpha", "epsilon", knownNodes, knownBots)
+	if !unclaimedResult.Success {
+		t.Errorf("Trying to claim an unclaimed node should result in success")
+	}
+	if len(knownBots["alpha"].Claims) != 2 {
+		t.Errorf("Claiming unclaimed node didn't add claim to bot's list of claims: %d", len(knownBots["alpha"].Claims))
+	}
+	if knownNodes["epsilon"].ClaimedBy != "alpha" {
+		t.Errorf("Claiming node didn't add claim to node's property")
+	}
+
+	claimedResult := handlers.Claim("alpha", "delta", knownNodes, knownBots)
+	if claimedResult.Success {
+		t.Errorf("Trying to claim a node claimed by someone else should result in failure")
+	}
+	if len(knownBots["alpha"].Claims) != 2 {
+		t.Errorf("Claiming node owned by another bot should result in error")
+	}
+	if knownNodes["delta"].ClaimedBy != "beta" {
+		t.Errorf("Claiming node owned by other bot shouldn't change node's claim")
+	}
+
+	alreadyClaimedResult := handlers.Claim("alpha", "epsilon", knownNodes, knownBots)
+	if !alreadyClaimedResult.Success {
+		t.Errorf("Trying to claim a node already claimed should result in success")
+	}
+	if len(knownBots["alpha"].Claims) != 2 {
+		t.Errorf("Claiming existing claimed node didn't preserve claim list")
+	}
+	if knownNodes["epsilon"].ClaimedBy != "alpha" {
+		t.Errorf("Claiming existing node should keep node's claim")
+	}
+
+}
+
 /**
 Helper functions
 */
