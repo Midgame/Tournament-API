@@ -4,6 +4,7 @@ type EntityType int
 
 const (
 	BOT EntityType = iota
+	NODE
 )
 
 type GridEntity struct {

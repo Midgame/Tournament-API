@@ -23,26 +23,11 @@ func TestRegisterUser(t *testing.T) {
 	}
 }
 
-func createBot(uuid string) structs.Bot {
-	bot := structs.Bot{
-		GridEntity: structs.GridEntity{
-			Id:   uuid,
-			Type: structs.BOT,
-			Location: structs.GridLocation{
-				X: 0,
-				Y: 0,
-			},
-		},
-		Claims: []string{},
-	}
-	return bot
-}
-
 func TestStatus(t *testing.T) {
 	knownBots := make(map[string]structs.Bot)
-	knownBots["alpha"] = createBot("alpha")
-	knownBots["beta"] = createBot("beta")
-	knownBots["gamma"] = createBot("gamma")
+	knownBots["alpha"] = createBot("alpha", []string{})
+	knownBots["beta"] = createBot("beta", []string{})
+	knownBots["gamma"] = createBot("gamma", []string{})
 
 	validResult := handlers.Status("beta", false, knownBots)
 	if len(validResult.Bots) != 1 || validResult.Bots[0].Id != "beta" {
@@ -58,5 +43,78 @@ func TestStatus(t *testing.T) {
 	if len(debugResult.Bots) != 3 {
 		t.Errorf("Debug result should return all bots, found: %d", len(debugResult.Bots))
 	}
+}
 
+func TestRelease(t *testing.T) {
+	knownBots := make(map[string]structs.Bot)
+	knownBots["alpha"] = createBot("alpha", []string{"gamma", "epsilon"})
+	knownBots["beta"] = createBot("beta", []string{"delta"})
+
+	knownNodes := make(map[string]structs.Node)
+	knownNodes["gamma"] = createNode("gamma", "alpha")
+	knownNodes["delta"] = createNode("delta", "beta")
+	knownNodes["epsilon"] = createNode("epsilon", "alpha")
+
+	// Trying to release a non-existent node should result in error
+	nonExistentResult := handlers.Release("alpha", "iota", knownNodes, knownBots)
+	if len(knownBots["alpha"].Claims) != 2 {
+		t.Errorf("Non-existent node somehow mutated known bot claims: %d", len(knownBots["alpha"].Claims))
+	}
+	if nonExistentResult.Success {
+		t.Errorf("Non-existent node somehow resulted in successful response")
+	}
+
+	// Trying to release someone else's node should result in error and not affect the other bot
+	unownedResult := handlers.Release("alpha", "delta", knownNodes, knownBots)
+	if len(knownBots["beta"].Claims) != 1 || len(knownBots["alpha"].Claims) != 2 {
+		t.Errorf("Node owned by other bot somehow mutated requesting bots claims")
+	}
+	if unownedResult.Success {
+		t.Errorf("Unowned node somehow resulted in successful response")
+	}
+
+	// Trying to release your own node should result only in that node being released
+	validResult := handlers.Release("alpha", "epsilon", knownNodes, knownBots)
+	if !validResult.Success {
+		t.Errorf("Valid node somehow resulted in error response")
+	}
+	if len(knownBots["alpha"].Claims) > 1 || knownNodes["epsilon"].ClaimedBy != "" {
+		t.Errorf("Valid node somehow didn't release claim. Bot claims: %d, Node claimed by: %s",
+			len(knownBots["alpha"].Claims), knownNodes["epsilon"].ClaimedBy)
+	}
+
+}
+
+/**
+Helper functions
+*/
+
+func createBot(uuid string, claims []string) structs.Bot {
+	bot := structs.Bot{
+		GridEntity: structs.GridEntity{
+			Id:   uuid,
+			Type: structs.BOT,
+			Location: structs.GridLocation{
+				X: 0,
+				Y: 0,
+			},
+		},
+		Claims: claims,
+	}
+	return bot
+}
+
+func createNode(uuid string, claimedBy string) structs.Node {
+	node := structs.Node{
+		GridEntity: structs.GridEntity{
+			Id:   uuid,
+			Type: structs.NODE,
+			Location: structs.GridLocation{
+				X: 0,
+				Y: 0,
+			},
+		},
+		ClaimedBy: claimedBy,
+	}
+	return node
 }
