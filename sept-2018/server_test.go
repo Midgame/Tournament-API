@@ -136,6 +136,55 @@ func TestClaimRequest(t *testing.T) {
 
 }
 
+func TestStatusRequest(t *testing.T) {
+	s = Server{}
+	s.Initialize()
+	s.KnownBots["alpha"] = createBot("alpha", []string{})
+	s.KnownBots["beta"] = createBot("beta", []string{"gamma"})
+	s.KnownNodes["gamma"] = createNode("gamma", "beta")
+	betaBot := s.KnownBots["beta"]
+	betaBot.DebugMode = true
+	s.KnownBots["beta"] = betaBot
+
+	route := "/status"
+
+	// Tests
+	// 0) No params should return error
+	// 1) Non-debug result should find single bot with valid uuid
+	// 2) debug result should return all bots
+	// 3) non-debug result with bad callsign should return error
+
+	getResponse := func(postBody string) (handlers.StatusResponse, string) {
+		payload := []byte(postBody)
+		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
+		result := executeRequest(request)
+		checkResponseCode(t, http.StatusOK, result.Code)
+
+		var response handlers.StatusResponse
+		json.Unmarshal([]byte(result.Body.String()), &response)
+		return response, result.Body.String()
+	}
+
+	tt := []struct {
+		Payload string
+		Length  int
+		Error   bool
+	}{
+		{`{}`, 0, true},
+		{`{"callsign":"alpha"}`, 1, false},
+		{`{"callsign":"beta"}`, 2, false},
+		{`{"callsign":"delta"}`, 0, true},
+	}
+
+	for _, tc := range tt {
+		response, result := getResponse(tc.Payload)
+		if len(response.Bots) != tc.Length && response.Error != tc.Error {
+			t.Errorf("ClaimHandler returned bad result. Raw: %v", result)
+		}
+	}
+
+}
+
 func TestInit(t *testing.T) {
 	s = Server{}
 	s.Initialize()

@@ -4,31 +4,41 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
+type StatusRequest struct {
+	Callsign string
+}
+
 type StatusResponse struct {
-	Bots []structs.BotStatus
+	Bots  []structs.BotStatus
+	Error bool
 }
 
 // Status returns information about the requesting user's:
-// Location, Claims, Last 5 actions, Total score
+// Location, Claims, Total score
 // If in debug mode, also returns this information for all other known bots
-func Status(id string, debug bool, knownBots map[string]structs.Bot) StatusResponse {
+func Status(req StatusRequest, knownBots map[string]structs.Bot) StatusResponse {
 	botList := []structs.BotStatus{}
-	response := StatusResponse{
-		Bots: botList,
+	resp := StatusResponse{
+		Bots:  botList,
+		Error: false,
+	}
+
+	bot, ok := knownBots[req.Callsign]
+	if !ok {
+		resp.Error = true
+		return resp
 	}
 
 	// In debug mode, return all bots
-	if debug {
+	if bot.DebugMode {
 		for _, bot := range knownBots {
-			response.Bots = append(response.Bots, bot.GetStatus())
+			resp.Bots = append(resp.Bots, bot.GetStatus())
 		}
-		return response
+		return resp
 	}
 
 	// In regular mode, just return the requested id
-	if bot, ok := knownBots[id]; ok {
-		response.Bots = append(response.Bots, bot.GetStatus())
-	}
-	return response
+	resp.Bots = append(resp.Bots, bot.GetStatus())
+	return resp
 
 }

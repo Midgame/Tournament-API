@@ -43,19 +43,24 @@ func TestStatus(t *testing.T) {
 	knownBots := make(map[string]structs.Bot)
 	knownBots["alpha"] = createBot("alpha", []string{})
 	knownBots["beta"] = createBot("beta", []string{})
-	knownBots["gamma"] = createBot("gamma", []string{})
+	gammaBot := createBot("gamma", []string{})
+	gammaBot.DebugMode = true
+	knownBots["gamma"] = gammaBot
 
-	validResult := handlers.Status("beta", false, knownBots)
+	validReq := handlers.StatusRequest{Callsign: "beta"}
+	validResult := handlers.Status(validReq, knownBots)
 	if len(validResult.Bots) != 1 || validResult.Bots[0].Id != "beta" {
 		t.Errorf("Non-debug result should find single bot with valid uuid. Bot found has ID: %s", validResult.Bots[0].Id)
 	}
 
-	invalidResult := handlers.Status("delta", false, knownBots)
+	invalidReq := handlers.StatusRequest{Callsign: "delta"}
+	invalidResult := handlers.Status(invalidReq, knownBots)
 	if len(invalidResult.Bots) > 0 {
 		t.Errorf("Non-debug result should find no bots with invalid uuid, found: %d", len(invalidResult.Bots))
 	}
 
-	debugResult := handlers.Status("delta", true, knownBots)
+	debugReq := handlers.StatusRequest{Callsign: "gamma"}
+	debugResult := handlers.Status(debugReq, knownBots)
 	if len(debugResult.Bots) != 3 {
 		t.Errorf("Debug result should return all bots, found: %d", len(debugResult.Bots))
 	}

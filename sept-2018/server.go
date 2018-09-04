@@ -37,6 +37,20 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
+func (s *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
+	var req handlers.StatusRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		respondWithError(w, http.StatusBadRequest, errorMsg)
+		return
+	}
+	defer r.Body.Close()
+
+	response := handlers.Status(req, s.KnownBots)
+	json.NewEncoder(w).Encode(response)
+}
+
 // releaseHandler releases a claim on a node.
 func (s *Server) releaseHandler(w http.ResponseWriter, r *http.Request) {
 	var req handlers.ReleaseRequest
@@ -98,6 +112,7 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/register", s.registrationHandler).Methods("POST")
 	s.Router.HandleFunc("/claim", s.claimHandler).Methods("POST")
 	s.Router.HandleFunc("/release", s.releaseHandler).Methods("POST")
+	s.Router.HandleFunc("/status", s.statusHandler).Methods("POST")
 }
 
 func (s *Server) Run() {
