@@ -148,12 +148,6 @@ func TestStatusRequest(t *testing.T) {
 
 	route := "/status"
 
-	// Tests
-	// 0) No params should return error
-	// 1) Non-debug result should find single bot with valid uuid
-	// 2) debug result should return all bots
-	// 3) non-debug result with bad callsign should return error
-
 	getResponse := func(postBody string) (handlers.StatusResponse, string) {
 		payload := []byte(postBody)
 		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
@@ -182,7 +176,48 @@ func TestStatusRequest(t *testing.T) {
 			t.Errorf("ClaimHandler returned bad result. Raw: %v", result)
 		}
 	}
+}
 
+func TestMineRequest(t *testing.T) {
+	s = Server{}
+	s.Initialize()
+	s.KnownBots["alpha"] = createBot("alpha", []string{})
+	s.KnownBots["beta"] = createBot("beta", []string{"gamma"})
+	s.KnownNodes["gamma"] = createNode("gamma", "beta")
+
+	route := "/mine"
+
+	getResponse := func(postBody string) (handlers.MineResponse, string) {
+		payload := []byte(postBody)
+		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
+		result := executeRequest(request)
+		checkResponseCode(t, http.StatusOK, result.Code)
+
+		var response handlers.MineResponse
+		json.Unmarshal([]byte(result.Body.String()), &response)
+		return response, result.Body.String()
+	}
+
+	tt := []struct {
+		Payload   string
+		Mined     uint64
+		Remaining uint64
+		Error     bool
+	}{
+		{`{}`, 0, 0, true},
+		{`{"callsign":"alpha", "node":"foobar"}`, 0, 0, true},
+		{`{"callsign":"foobar", "node":"gamma"}`, 0, 0, true},
+		{`{"callsign":"alpha", "node":"gamma"}`, 0, 0, true},
+		{`{"callsign":"beta", "node":"gamma"}`, 1, 0, false},
+		{`{"callsign":"beta", "node":"gamma"}`, 0, 0, true},
+	}
+
+	for _, tc := range tt {
+		response, result := getResponse(tc.Payload)
+		if tc.Error != response.Error || tc.Mined != response.AmountMined || tc.Remaining != response.AmountRemaining {
+			t.Errorf("MineHandler returned bad result. Raw: %v", result)
+		}
+	}
 }
 
 func TestInit(t *testing.T) {

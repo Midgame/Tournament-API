@@ -5,7 +5,7 @@ import (
 )
 
 type StatusRequest struct {
-	Callsign string
+	Callsign string `json:"callsign"`
 }
 
 type StatusResponse struct {

@@ -196,6 +196,7 @@ func createNode(uuid string, claimedBy string) structs.Node {
 			},
 		},
 		ClaimedBy: claimedBy,
+		Value:     1,
 	}
 	return node
 }
