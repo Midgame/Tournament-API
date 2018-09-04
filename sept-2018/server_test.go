@@ -27,6 +27,47 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 	return rr
 }
 
+func TestReleaseRequest(t *testing.T) {
+	s = Server{}
+	s.Initialize()
+	route := "/release"
+
+	s.KnownBots["alpha"] = createBot("alpha", []string{"delta"})
+	s.KnownBots["beta"] = createBot("beta", []string{"gamma"})
+	s.KnownNodes["gamma"] = createNode("gamma", "beta")
+	s.KnownNodes["delta"] = createNode("delta", "alpha")
+	s.KnownNodes["epsilon"] = createNode("epsilon", "alpha")
+
+	getResponse := func(postBody string) (handlers.ReleaseResponse, string) {
+		payload := []byte(postBody)
+		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
+		result := executeRequest(request)
+		var response handlers.ReleaseResponse
+		json.Unmarshal([]byte(result.Body.String()), &response)
+		return response, result.Body.String()
+	}
+
+	tt := []struct {
+		payload  string
+		response handlers.ReleaseResponse
+	}{
+		{`{}`, handlers.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"foobar", "node":"delta"}`, handlers.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"foobar"}`, handlers.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"gamma"}`, handlers.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"delta"}`, handlers.ReleaseResponse{Success: true, Error: false}},
+		{`{"callsign":"alpha", "node":"epsilon"}`, handlers.ReleaseResponse{Success: false, Error: true}},
+	}
+
+	for _, tc := range tt {
+		response, result := getResponse(tc.payload)
+		if response != tc.response {
+			t.Errorf("ReleaseHandler returned bad result. Expected: %v Actual: %v Raw: %v", tc.response, response, result)
+		}
+
+	}
+}
+
 func TestRegisterRequest(t *testing.T) {
 	s = Server{}
 	s.Initialize()

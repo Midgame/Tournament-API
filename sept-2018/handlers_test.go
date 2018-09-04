@@ -72,7 +72,8 @@ func TestRelease(t *testing.T) {
 	knownNodes["epsilon"] = createNode("epsilon", "alpha")
 
 	// Trying to release a non-existent node should result in error
-	nonExistentResult := handlers.Release("alpha", "iota", knownNodes, knownBots)
+	nonExistentReq := handlers.ReleaseRequest{Callsign: "alpha", NodeId: "iota"}
+	nonExistentResult := handlers.Release(nonExistentReq, knownNodes, knownBots)
 	if len(knownBots["alpha"].Claims) != 2 {
 		t.Errorf("Non-existent node somehow mutated known bot claims: %d", len(knownBots["alpha"].Claims))
 	}
@@ -81,7 +82,8 @@ func TestRelease(t *testing.T) {
 	}
 
 	// Trying to release someone else's node should result in error and not affect the other bot
-	unownedResult := handlers.Release("alpha", "delta", knownNodes, knownBots)
+	unownedReq := handlers.ReleaseRequest{Callsign: "alpha", NodeId: "delta"}
+	unownedResult := handlers.Release(unownedReq, knownNodes, knownBots)
 	if len(knownBots["beta"].Claims) != 1 || len(knownBots["alpha"].Claims) != 2 {
 		t.Errorf("Node owned by other bot somehow mutated requesting bots claims")
 	}
@@ -90,7 +92,8 @@ func TestRelease(t *testing.T) {
 	}
 
 	// Trying to release your own node should result only in that node being released
-	validResult := handlers.Release("alpha", "epsilon", knownNodes, knownBots)
+	validReq := handlers.ReleaseRequest{Callsign: "alpha", NodeId: "epsilon"}
+	validResult := handlers.Release(validReq, knownNodes, knownBots)
 	if !validResult.Success {
 		t.Errorf("Valid node somehow resulted in error response")
 	}

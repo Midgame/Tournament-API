@@ -35,6 +35,22 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
+// releaseHandler releases a claim on a node.
+func (s *Server) releaseHandler(w http.ResponseWriter, r *http.Request) {
+	var req handlers.ReleaseRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		respondWithError(w, http.StatusBadRequest, errorMsg)
+		return
+	}
+	defer r.Body.Close()
+
+	response := handlers.Release(req, s.KnownNodes, s.KnownBots)
+	json.NewEncoder(w).Encode(response)
+}
+
+// claimHandler accepts a claim from an existing callsign.
 func (s *Server) claimHandler(w http.ResponseWriter, r *http.Request) {
 	var req handlers.ClaimRequest
 	decoder := json.NewDecoder(r.Body)
@@ -49,8 +65,7 @@ func (s *Server) claimHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// RegistrationHandler accepts registration from a new bot. It generates a UUID for the user, registers it,
-// and returns the UUID to the user
+// registrationHandler accepts registration from a new bot.
 func (s *Server) registrationHandler(w http.ResponseWriter, r *http.Request) {
 	var req handlers.RegisterRequest
 	decoder := json.NewDecoder(r.Body)
@@ -78,6 +93,7 @@ func (s *Server) Initialize() {
 func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/register", s.registrationHandler).Methods("POST")
 	s.Router.HandleFunc("/claim", s.claimHandler).Methods("POST")
+	s.Router.HandleFunc("/release", s.releaseHandler).Methods("POST")
 }
 
 func (s *Server) Run() {
