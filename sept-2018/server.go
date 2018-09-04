@@ -23,6 +23,7 @@ type Server struct {
 	Grid       structs.Grid
 }
 
+// Writes out to the provided response writer with a JSON response. Only when response is successful.
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
@@ -31,6 +32,7 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+// Writes out to the provided response writer with an error code.
 func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }
@@ -82,6 +84,7 @@ func (s *Server) registrationHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// Initializes the server with some defaults
 func (s *Server) Initialize() {
 	s.KnownBots = make(map[string]structs.Bot)
 	s.KnownNodes = make(map[string]structs.Node)
@@ -90,6 +93,7 @@ func (s *Server) Initialize() {
 	s.initializeRoutes()
 }
 
+// Initializes all the routes
 func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/register", s.registrationHandler).Methods("POST")
 	s.Router.HandleFunc("/claim", s.claimHandler).Methods("POST")

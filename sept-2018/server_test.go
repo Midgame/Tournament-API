@@ -14,19 +14,6 @@ var (
 	s Server
 )
 
-func checkResponseCode(t *testing.T, expected, actual int) {
-	if expected != actual {
-		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
-	}
-}
-
-func executeRequest(req *http.Request) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	s.Router.ServeHTTP(rr, req)
-
-	return rr
-}
-
 func TestReleaseRequest(t *testing.T) {
 	s = Server{}
 	s.Initialize()
@@ -64,7 +51,6 @@ func TestReleaseRequest(t *testing.T) {
 		if response != tc.response {
 			t.Errorf("ReleaseHandler returned bad result. Expected: %v Actual: %v Raw: %v", tc.response, response, result)
 		}
-
 	}
 }
 
@@ -128,46 +114,24 @@ func TestClaimRequest(t *testing.T) {
 		return response, result.Body.String()
 	}
 
-	// Simple test: No params. Should fail.
-	simpleResponse, simpleResult := getResponse(`{}`)
-	if simpleResponse.Success {
-		t.Errorf("ClaimHandler shouldn't succeed with no params. Got: %v", simpleResult)
+	tt := []struct {
+		payload  string
+		response handlers.ClaimResponse
+	}{
+		{`{}`, handlers.ClaimResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha"}`, handlers.ClaimResponse{Success: false, Error: true}},
+		{`{"node":"delta"}`, handlers.ClaimResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"delta"}`, handlers.ClaimResponse{Success: true, Error: true}},
+		{`{"callsign":"alpha", "node":"gamma"}`, handlers.ClaimResponse{Success: false, Error: false}},
+		{`{"callsign":"alpha", "node":"delta"}`, handlers.ClaimResponse{Success: false, Error: false}},
+		{`{"callsign":"alpha", "node":"foobar"}`, handlers.ClaimResponse{Success: false, Error: true}},
 	}
 
-	// One param: Callsign. Should fail.
-	reqResponse, reqResult := getResponse(`{"callsign":"alpha"}`)
-	if reqResponse.Success {
-		t.Errorf("ClaimHandler shouldn't succeed with one param. Got: %v", reqResult)
-	}
-
-	// One param: Node. Should fail.
-	nodeResponse, nodeResult := getResponse(`{"node":"delta"}`)
-	if nodeResponse.Success {
-		t.Errorf("ClaimHandler shouldn't succeed with one param. Got: %v", nodeResult)
-	}
-
-	// Valid claim. Should succeed.
-	validResponse, validResult := getResponse(`{"callsign":"alpha", "node":"delta"}`)
-	if !validResponse.Success {
-		t.Errorf("ClaimHandler should succeed with valid claim. Got: %v", validResult)
-	}
-
-	// Invalid claim. Should fail.
-	invalidResponse, invalidResult := getResponse(`{"callsign":"alpha", "node":"gamma"}`)
-	if invalidResponse.Success {
-		t.Errorf("ClaimHandler should not succeed with invalid claim. Got: %v", invalidResult)
-	}
-
-	// Already claimed by callsign. Should succeed.
-	alreadyResponse, alreadyResult := getResponse(`{"callsign":"alpha", "node":"delta"}`)
-	if !alreadyResponse.Success {
-		t.Errorf("ClaimHandler should succeed with already claimed node. Got: %v", alreadyResult)
-	}
-
-	// Invalid node. Should return error.
-	invalidNodeResponse, invalidNodeResult := getResponse(`{"callsign":"alpha", "node":"foobar"}`)
-	if invalidNodeResponse.Success || !invalidNodeResponse.Error {
-		t.Errorf("ClaimHandler should error with non-existant claimed node. Got: %v", invalidNodeResult)
+	for _, tc := range tt {
+		response, result := getResponse(tc.payload)
+		if response.Success != tc.response.Success && response.Error != tc.response.Error {
+			t.Errorf("ClaimHandler returned bad result. Expected: %v Actual: %v Raw: %v", tc.response, response, result)
+		}
 	}
 
 }
@@ -188,4 +152,19 @@ func TestInit(t *testing.T) {
 	if len(s.Grid.Entities) != 0 {
 		t.Errorf("Grid entities not initialized properly")
 	}
+}
+
+/** Helper functions */
+
+func checkResponseCode(t *testing.T, expected, actual int) {
+	if expected != actual {
+		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
+	}
+}
+
+func executeRequest(req *http.Request) *httptest.ResponseRecorder {
+	rr := httptest.NewRecorder()
+	s.Router.ServeHTTP(rr, req)
+
+	return rr
 }
