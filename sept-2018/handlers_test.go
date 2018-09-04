@@ -8,8 +8,12 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
-	bot, response := handlers.RegisterUser()
-	if response.Uuid != bot.Id {
+	req := handlers.RegisterRequest{
+		DebugMode: false,
+		Callsign:  "",
+	}
+	bot, response := handlers.RegisterUser(req)
+	if response.Callsign != bot.Id {
 		t.Errorf("Response didn't return the correct UUID")
 	}
 	if bot.Id == "" {
@@ -20,6 +24,18 @@ func TestRegisterUser(t *testing.T) {
 	}
 	if bot.Location.X != 0 || bot.Location.Y != 0 {
 		t.Errorf("Bot wasn't initialized with a location properly")
+	}
+
+	debugReq := handlers.RegisterRequest{
+		DebugMode: true,
+		Callsign:  "foobar",
+	}
+	debugBot, _ := handlers.RegisterUser(debugReq)
+	if debugBot.Id != "foobar" {
+		t.Errorf("Register function didn't accept callsign. Assigned: %s", bot.Id)
+	}
+	if !debugBot.DebugMode {
+		t.Errorf("Register function didn't accept debug flag properly.")
 	}
 }
 

@@ -15,26 +15,55 @@ const (
 	GRID_HEIGHT = 100
 )
 
-var (
-	knownBots  map[string]structs.Bot  = make(map[string]structs.Bot)
-	knownNodes map[string]structs.Node = make(map[string]structs.Node)
-	grid       structs.Grid            = structs.Grid{Width: GRID_WIDTH, Height: GRID_HEIGHT, Entities: [][]structs.GridEntity{}}
-)
+type Server struct {
+	Router     *mux.Router
+	KnownBots  map[string]structs.Bot
+	KnownNodes map[string]structs.Node
+	Grid       structs.Grid
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
+func respondWithError(w http.ResponseWriter, code int, message string) {
+	respondWithJSON(w, code, map[string]string{"error": message})
+}
 
 // RegistrationHandler accepts registration from a new bot. It generates a UUID for the user, registers it,
 // and returns the UUID to the user
-func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
-	bot, response := handlers.RegisterUser()
-	knownBots[bot.Id] = bot
+func (s *Server) registrationHandler(w http.ResponseWriter, r *http.Request) {
+
+	var req handlers.RegisterRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	bot, response := handlers.RegisterUser(req)
+	s.KnownBots[bot.Id] = bot
 
 	json.NewEncoder(w).Encode(response)
 }
 
-func main() {
-	// Setup
-	r := mux.NewRouter()
-	r.HandleFunc("/register", RegistrationHandler)
+func (s *Server) Initialize() {
+	s.KnownBots = make(map[string]structs.Bot)
+	s.KnownNodes = make(map[string]structs.Node)
+	s.Grid = structs.Grid{Width: GRID_WIDTH, Height: GRID_HEIGHT, Entities: [][]structs.GridEntity{}}
+	s.Router = mux.NewRouter()
+	s.initializeRoutes()
+}
 
-	// Run
-	http.Handle("/", r)
+func (s *Server) initializeRoutes() {
+	s.Router.HandleFunc("/register", s.registrationHandler).Methods("POST")
+}
+
+func (s *Server) Run() {
+	http.Handle("/", s.Router)
 }

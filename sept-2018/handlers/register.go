@@ -6,28 +6,38 @@ import (
 	"github.com/google/uuid"
 )
 
-type Response struct {
-	Uuid string
+type RegisterRequest struct {
+	DebugMode bool   `json:"debug,string,omitempty"`
+	Callsign  string `json:"callsign,omitempty"`
+}
+
+type RegisterResponse struct {
+	Callsign  string
+	DebugMode bool
 }
 
 // registerUser generates a new UUID for a user, adds that UUID to the list of known bots,
 // and then returns the bot entity.
-func RegisterUser() (structs.Bot, Response) {
-	uuid := uuid.New().String()
+func RegisterUser(req RegisterRequest) (structs.Bot, RegisterResponse) {
+	if req.Callsign == "" {
+		req.Callsign = uuid.New().String()
+	}
 	bot := structs.Bot{
 		GridEntity: structs.GridEntity{
-			Id:   uuid,
+			Id:   req.Callsign,
 			Type: structs.BOT,
 			Location: structs.GridLocation{
 				X: 0,
 				Y: 0,
 			},
 		},
-		Claims: []string{},
+		DebugMode: req.DebugMode,
+		Claims:    []string{},
 	}
 
-	response := Response{
-		Uuid: uuid,
+	response := RegisterResponse{
+		Callsign:  bot.Id,
+		DebugMode: bot.DebugMode,
 	}
 
 	return bot, response
