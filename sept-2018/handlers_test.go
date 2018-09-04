@@ -111,7 +111,11 @@ func TestClaim(t *testing.T) {
 	knownNodes["delta"] = createNode("delta", "beta")
 	knownNodes["epsilon"] = createNode("epsilon", "")
 
-	unclaimedResult := handlers.Claim("alpha", "epsilon", knownNodes, knownBots)
+	unclaimedReq := handlers.ClaimRequest{
+		Callsign: "alpha",
+		NodeId:   "epsilon",
+	}
+	unclaimedResult := handlers.Claim(unclaimedReq, knownNodes, knownBots)
 	if !unclaimedResult.Success {
 		t.Errorf("Trying to claim an unclaimed node should result in success")
 	}
@@ -122,7 +126,11 @@ func TestClaim(t *testing.T) {
 		t.Errorf("Claiming node didn't add claim to node's property")
 	}
 
-	claimedResult := handlers.Claim("alpha", "delta", knownNodes, knownBots)
+	claimedReq := handlers.ClaimRequest{
+		Callsign: "alpha",
+		NodeId:   "delta",
+	}
+	claimedResult := handlers.Claim(claimedReq, knownNodes, knownBots)
 	if claimedResult.Success {
 		t.Errorf("Trying to claim a node claimed by someone else should result in failure")
 	}
@@ -133,7 +141,11 @@ func TestClaim(t *testing.T) {
 		t.Errorf("Claiming node owned by other bot shouldn't change node's claim")
 	}
 
-	alreadyClaimedResult := handlers.Claim("alpha", "epsilon", knownNodes, knownBots)
+	alreadyClaimedReq := handlers.ClaimRequest{
+		Callsign: "alpha",
+		NodeId:   "epsilon",
+	}
+	alreadyClaimedResult := handlers.Claim(alreadyClaimedReq, knownNodes, knownBots)
 	if !alreadyClaimedResult.Success {
 		t.Errorf("Trying to claim a node already claimed should result in success")
 	}

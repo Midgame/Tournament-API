@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/handlers"
@@ -34,14 +35,28 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
+func (s *Server) claimHandler(w http.ResponseWriter, r *http.Request) {
+	var req handlers.ClaimRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		respondWithError(w, http.StatusBadRequest, errorMsg)
+		return
+	}
+	defer r.Body.Close()
+
+	response := handlers.Claim(req, s.KnownNodes, s.KnownBots)
+	json.NewEncoder(w).Encode(response)
+}
+
 // RegistrationHandler accepts registration from a new bot. It generates a UUID for the user, registers it,
 // and returns the UUID to the user
 func (s *Server) registrationHandler(w http.ResponseWriter, r *http.Request) {
-
 	var req handlers.RegisterRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		respondWithError(w, http.StatusBadRequest, errorMsg)
 		return
 	}
 	defer r.Body.Close()
@@ -62,6 +77,7 @@ func (s *Server) Initialize() {
 
 func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/register", s.registrationHandler).Methods("POST")
+	s.Router.HandleFunc("/claim", s.claimHandler).Methods("POST")
 }
 
 func (s *Server) Run() {
