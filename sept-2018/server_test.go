@@ -224,6 +224,10 @@ func TestScanRequest(t *testing.T) {
 	t.Errorf("Not implemented yet")
 }
 
+func TestMoveRequest(t *testing.T) {
+	t.Errorf("Not implemented yet")
+}
+
 func TestInit(t *testing.T) {
 	s = Server{}
 	s.Initialize()

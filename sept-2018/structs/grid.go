@@ -87,3 +87,14 @@ func (grid Grid) ScannableByBot(node Node, bot Bot) bool {
 	return NumberWithinRange(int(bot.Location.X), SCAN_RANGE, int(grid.Width), int(node.Location.X)) &&
 		NumberWithinRange(int(bot.Location.Y), SCAN_RANGE, int(grid.Height), int(node.Location.Y))
 }
+
+func (grid Grid) MoveBot(bot Bot, x int, y int) GridLocation {
+	// Is this a valid move for the bot?
+	validMove := NumberWithinRange(int(bot.Location.X), 1, int(grid.Width), x) &&
+		NumberWithinRange(int(bot.Location.Y), 1, int(grid.Height), y)
+
+	if validMove {
+		bot.Location = GridLocation{X: uint64(x), Y: uint64(y)}
+	}
+	return bot.Location
+}

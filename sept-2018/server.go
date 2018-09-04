@@ -114,6 +114,38 @@ func (s *Server) mineHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// scanHandler accepts a scan request and returns information around a given callsign
+func (s *Server) scanHandler(w http.ResponseWriter, r *http.Request) {
+	var req handlers.ScanRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		respondWithError(w, http.StatusBadRequest, errorMsg)
+		return
+	}
+	defer r.Body.Close()
+
+	response := handlers.Scan(req, s.KnownNodes, s.KnownBots, s.Grid)
+
+	json.NewEncoder(w).Encode(response)
+}
+
+// moveHandler accepts a move request from a given callsign and moves it to the requested location
+func (s *Server) moveHandler(w http.ResponseWriter, r *http.Request) {
+	var req handlers.MoveRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		respondWithError(w, http.StatusBadRequest, errorMsg)
+		return
+	}
+	defer r.Body.Close()
+
+	response := handlers.Move(req, s.KnownNodes, s.KnownBots, s.Grid)
+
+	json.NewEncoder(w).Encode(response)
+}
+
 // Initializes the server with some defaults
 func (s *Server) Initialize() {
 	s.KnownBots = make(map[string]structs.Bot)
@@ -130,6 +162,8 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/release", s.releaseHandler).Methods("POST")
 	s.Router.HandleFunc("/status", s.statusHandler).Methods("POST")
 	s.Router.HandleFunc("/mine", s.mineHandler).Methods("POST")
+	s.Router.HandleFunc("/scan", s.scanHandler).Methods("POST")
+	s.Router.HandleFunc("/move", s.moveHandler).Methods("POST")
 }
 
 func (s *Server) Run() {

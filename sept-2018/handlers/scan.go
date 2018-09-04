@@ -5,7 +5,7 @@ import (
 )
 
 type ScanRequest struct {
-	Callsign string
+	Callsign string `json:"string"`
 }
 
 type ScanResponse struct {
