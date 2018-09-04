@@ -220,6 +220,10 @@ func TestMineRequest(t *testing.T) {
 	}
 }
 
+func TestScanRequest(t *testing.T) {
+	t.Errorf("Not implemented yet")
+}
+
 func TestInit(t *testing.T) {
 	s = Server{}
 	s.Initialize()
