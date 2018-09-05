@@ -81,9 +81,8 @@ func (s *Server) registrationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bot, response := handlers.RegisterUser(req)
+	bot, response := handlers.RegisterUser(req, s.Grid)
 	s.Grid.Bots[bot.Id] = bot
-
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -95,7 +94,6 @@ func (s *Server) mineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := handlers.Mine(req, s.Grid.Nodes, s.Grid.Bots)
-
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -107,7 +105,6 @@ func (s *Server) scanHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := handlers.Scan(req, s.Grid.Nodes, s.Grid.Bots, s.Grid)
-
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -122,7 +119,7 @@ func (s *Server) moveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	response := handlers.Move(req, s.Grid.Nodes, s.Grid.Bots, s.Grid)
+	response := handlers.Move(req, s.Grid.Bots, s.Grid)
 
 	json.NewEncoder(w).Encode(response)
 }

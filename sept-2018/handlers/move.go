@@ -5,8 +5,9 @@ import (
 )
 
 // Move determines if a move is valid for a given callsign, and updates the bot's location if so (and returns the new location)
-func Move(req structs.MoveRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot, grid structs.Grid) structs.MoveResponse {
-	resp := structs.MoveResponse{
+func Move(req structs.MoveRequest, knownBots map[string]structs.Bot, grid structs.Grid) structs.StatusResponse {
+	resp := structs.StatusResponse{
+		Bots:  []structs.BotStatus{},
 		Error: false,
 	}
 
@@ -16,10 +17,9 @@ func Move(req structs.MoveRequest, knownNodes map[string]structs.Node, knownBots
 		return resp
 	}
 
-	resp.Location = bot.Location
-
 	newLocation := grid.MoveBot(bot, req.X, req.Y)
-	resp.Location = newLocation
 	bot.Location = newLocation
+	knownBots[bot.Id] = bot
+	resp.Bots = []structs.BotStatus{bot.GetStatus()}
 	return resp
 }

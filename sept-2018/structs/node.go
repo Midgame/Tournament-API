@@ -7,17 +7,17 @@ type Node struct {
 }
 
 type NodeStatus struct {
-	Id        string
-	ClaimedBy string
-	Location  GridLocation
+	Id       string
+	Location GridLocation
+	Value    int
 }
 
 // GetStatus returns some basic information about this node, including
 // location, id, and any existing claims
 func (node Node) GetStatus() NodeStatus {
 	return NodeStatus{
-		Id:        node.Id,
-		Location:  node.Location,
-		ClaimedBy: node.ClaimedBy,
+		Id:       node.Id,
+		Location: node.Location,
+		Value:    node.Value,
 	}
 }

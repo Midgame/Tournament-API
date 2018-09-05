@@ -7,11 +7,10 @@ import (
 // Release releases a claim on a node
 // If this is not a node owned by the requestor, returns an error.
 // Returns an :ok otherwise.
-func Release(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) structs.ReleaseResponse {
+func Release(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) structs.StatusResponse {
 
-	resp := structs.ReleaseResponse{
-		Error:   true,
-		Success: false,
+	resp := structs.StatusResponse{
+		Error: true,
 	}
 
 	// Return an error if this node does not exist or the bot does not exist
@@ -19,11 +18,13 @@ func Release(req structs.SimpleRequest, knownNodes map[string]structs.Node, know
 	if !ok {
 		return resp
 	}
+	resp.Nodes = []structs.NodeStatus{node.GetStatus()}
 
 	bot, ok := knownBots[req.Callsign]
 	if !ok {
 		return resp
 	}
+	resp.Bots = []structs.BotStatus{bot.GetStatus()}
 
 	// Check if this node is owned by the requestor
 	for idx, claim := range knownBots[req.Callsign].Claims {
@@ -40,12 +41,12 @@ func Release(req structs.SimpleRequest, knownNodes map[string]structs.Node, know
 			knownBots[req.Callsign] = bot
 
 			resp.Error = false
-			resp.Success = true
 		}
 	}
 
-	// If not, error out
+	resp.Bots = []structs.BotStatus{bot.GetStatus()}
+	resp.Nodes = []structs.NodeStatus{node.GetStatus()}
+
 	return resp
 
-	// TODO: Should maybe calculate final score?
 }

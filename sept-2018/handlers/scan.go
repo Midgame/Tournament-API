@@ -6,9 +6,9 @@ import (
 
 // Scan releases information about the nodes surrounding the requestor.
 // Returns all nodes within a 5x5 grid around the requestor
-func Scan(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot, grid structs.Grid) structs.ScanResponse {
+func Scan(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot, grid structs.Grid) structs.StatusResponse {
 	nodeList := []structs.NodeStatus{}
-	resp := structs.ScanResponse{
+	resp := structs.StatusResponse{
 		Error: false,
 	}
 

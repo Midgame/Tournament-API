@@ -9,5 +9,5 @@ type MoveRequest struct {
 type SimpleRequest struct {
 	Callsign  string `json:"callsign"`
 	DebugMode bool   `json:"debug,string,omitempty"`
-	NodeId    string `json:"nodeid,omitempty"`
+	NodeId    string `json:"node,omitempty"`
 }

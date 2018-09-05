@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"math"
 	"math/rand"
 	"time"
 
@@ -43,41 +44,26 @@ type GridLocation struct {
 // Determines if a number is within a certain distance of a value. Accounts for wrapping around
 // (hence the maxValue param) in either direction.
 func NumberWithinRange(value int, distance int, maxValue int, testValue int) bool {
-	minDist := value - distance
-	maxDist := value + distance
+	// TODO: This doesn't cover wraparound
+
+	minDist := int(math.Max(0, float64(value-distance)))
+	maxDist := int(math.Min(float64(value+distance), float64(maxValue)))
 
 	withinRange := func(min int, max int, number int) bool {
 		return min <= number && max >= number
 	}
 
-	// Easy case: No overlap
-	if minDist >= 0 && maxDist <= maxValue {
-		return withinRange(minDist, maxDist, testValue)
-	}
+	return withinRange(minDist, maxDist, testValue)
 
-	// If min is < 0:
-	// Is this between 0, original value (no -> maybe return false if next is also false)
-	// Or else is this between (max + min), max? (no -> return false)
-	if minDist < 0 {
-		beforeOverlap := withinRange(0, value, testValue)
-		afterOverlap := withinRange(maxValue+minDist, maxValue, testValue)
-		if !(beforeOverlap || afterOverlap) {
-			return false
-		}
-	}
+}
 
-	// If maxDist is > maxValue:
-	// Is this between original value, max? (no -> maybe return false if next is false)
-	// Is this between 0, (max % gridMax)? (no -> return false)
-	if maxDist > maxValue {
-		beforeOverlap := withinRange(value, maxValue, testValue)
-		afterOverlap := withinRange(0, maxDist%maxValue, testValue)
-		if !(beforeOverlap || afterOverlap) {
-			return false
-		}
-	}
-
-	return true
+func (grid Grid) randomInitVals() (int, int, int) {
+	source := rand.NewSource(time.Now().UnixNano())
+	random := rand.New(source)
+	x := random.Intn(grid.Width + 1)
+	y := random.Intn(grid.Height + 1)
+	value := random.Intn(MAX_NODE_VALUE + 1)
+	return x, y, value
 }
 
 // ScannableByBot returns true if the provided node is within scan range of
@@ -91,7 +77,7 @@ func (grid Grid) ScannableByBot(node Node, bot Bot) bool {
 func (grid Grid) MoveBot(bot Bot, x int, y int) GridLocation {
 	// Is this a valid move for the bot?
 	validMove := NumberWithinRange(bot.Location.X, 1, grid.Width, x) &&
-		NumberWithinRange(int(bot.Location.Y), 1, grid.Height, y)
+		NumberWithinRange(bot.Location.Y, 1, grid.Height, y)
 
 	if validMove {
 		bot.Location = GridLocation{X: x, Y: y}
@@ -99,14 +85,27 @@ func (grid Grid) MoveBot(bot Bot, x int, y int) GridLocation {
 	return bot.Location
 }
 
+func (grid Grid) InitializeBot(callsign string, debug bool) Bot {
+	x, y, _ := grid.randomInitVals()
+	bot := Bot{
+		GridEntity: GridEntity{
+			Id:   callsign,
+			Type: BOT,
+			Location: GridLocation{
+				X: x,
+				Y: y,
+			},
+		},
+		DebugMode: debug,
+		Claims:    []string{},
+	}
+	return bot
+}
+
 func (grid Grid) initializeNodes() map[string]Node {
 	nodeMap := make(map[string]Node)
 	for idx := 0; idx < NUMBER_OF_NODES; idx++ {
-		source := rand.NewSource(time.Now().UnixNano())
-		random := rand.New(source)
-		x := random.Intn(grid.Width + 1)
-		y := random.Intn(grid.Height + 1)
-		value := random.Intn(MAX_NODE_VALUE + 1)
+		x, y, value := grid.randomInitVals()
 
 		node := Node{
 			GridEntity: GridEntity{

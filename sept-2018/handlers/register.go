@@ -8,26 +8,14 @@ import (
 
 // registerUser generates a new UUID for a user, adds that UUID to the list of known bots,
 // and then returns the bot entity.
-func RegisterUser(req structs.SimpleRequest) (structs.Bot, structs.RegisterResponse) {
+func RegisterUser(req structs.SimpleRequest, grid structs.Grid) (structs.Bot, structs.StatusResponse) {
 	if req.Callsign == "" {
 		req.Callsign = uuid.New().String()
 	}
-	bot := structs.Bot{
-		GridEntity: structs.GridEntity{
-			Id:   req.Callsign,
-			Type: structs.BOT,
-			Location: structs.GridLocation{
-				X: 0,
-				Y: 0,
-			},
-		},
-		DebugMode: req.DebugMode,
-		Claims:    []string{},
-	}
+	bot := grid.InitializeBot(req.Callsign, req.DebugMode)
 
-	response := structs.RegisterResponse{
-		Callsign:  bot.Id,
-		DebugMode: bot.DebugMode,
+	response := structs.StatusResponse{
+		Bots: []structs.BotStatus{bot.GetStatus()},
 	}
 
 	return bot, response
