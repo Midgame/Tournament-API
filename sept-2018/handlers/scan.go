@@ -4,20 +4,11 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
-type ScanRequest struct {
-	Callsign string `json:"string"`
-}
-
-type ScanResponse struct {
-	Nodes []structs.NodeStatus
-	Error bool
-}
-
 // Scan releases information about the nodes surrounding the requestor.
 // Returns all nodes within a 5x5 grid around the requestor
-func Scan(req ScanRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot, grid structs.Grid) ScanResponse {
+func Scan(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot, grid structs.Grid) structs.ScanResponse {
 	nodeList := []structs.NodeStatus{}
-	resp := ScanResponse{
+	resp := structs.ScanResponse{
 		Error: false,
 	}
 

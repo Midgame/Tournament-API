@@ -1,4 +1,4 @@
-package main
+package main_test
 
 import (
 	"bytes"
@@ -7,7 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/handlers"
+	. "github.com/HeadlightLabs/Tournament-API/sept-2018"
+	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
 var (
@@ -19,31 +20,31 @@ func TestReleaseRequest(t *testing.T) {
 	s.Initialize()
 	route := "/release"
 
-	s.KnownBots["alpha"] = createBot("alpha", []string{"delta"})
-	s.KnownBots["beta"] = createBot("beta", []string{"gamma"})
-	s.KnownNodes["gamma"] = createNode("gamma", "beta")
-	s.KnownNodes["delta"] = createNode("delta", "alpha")
-	s.KnownNodes["epsilon"] = createNode("epsilon", "alpha")
+	s.Grid.Bots["alpha"] = createBot("alpha", []string{"delta"})
+	s.Grid.Bots["beta"] = createBot("beta", []string{"gamma"})
+	s.Grid.Nodes["gamma"] = createNode("gamma", "beta")
+	s.Grid.Nodes["delta"] = createNode("delta", "alpha")
+	s.Grid.Nodes["epsilon"] = createNode("epsilon", "alpha")
 
-	getResponse := func(postBody string) (handlers.ReleaseResponse, string) {
+	getResponse := func(postBody string) (structs.ReleaseResponse, string) {
 		payload := []byte(postBody)
 		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
 		result := executeRequest(request)
-		var response handlers.ReleaseResponse
+		var response structs.ReleaseResponse
 		json.Unmarshal([]byte(result.Body.String()), &response)
 		return response, result.Body.String()
 	}
 
 	tt := []struct {
 		payload  string
-		response handlers.ReleaseResponse
+		response structs.ReleaseResponse
 	}{
-		{`{}`, handlers.ReleaseResponse{Success: false, Error: true}},
-		{`{"callsign":"foobar", "node":"delta"}`, handlers.ReleaseResponse{Success: false, Error: true}},
-		{`{"callsign":"alpha", "node":"foobar"}`, handlers.ReleaseResponse{Success: false, Error: true}},
-		{`{"callsign":"alpha", "node":"gamma"}`, handlers.ReleaseResponse{Success: false, Error: true}},
-		{`{"callsign":"alpha", "node":"delta"}`, handlers.ReleaseResponse{Success: true, Error: false}},
-		{`{"callsign":"alpha", "node":"epsilon"}`, handlers.ReleaseResponse{Success: false, Error: true}},
+		{`{}`, structs.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"foobar", "node":"delta"}`, structs.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"foobar"}`, structs.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"gamma"}`, structs.ReleaseResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"delta"}`, structs.ReleaseResponse{Success: true, Error: false}},
+		{`{"callsign":"alpha", "node":"epsilon"}`, structs.ReleaseResponse{Success: false, Error: true}},
 	}
 
 	for _, tc := range tt {
@@ -59,11 +60,11 @@ func TestRegisterRequest(t *testing.T) {
 	s.Initialize()
 	route := "/register"
 
-	getResponse := func(postBody string) (handlers.RegisterResponse, string) {
+	getResponse := func(postBody string) (structs.RegisterResponse, string) {
 		payload := []byte(postBody)
 		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
 		result := executeRequest(request)
-		var response handlers.RegisterResponse
+		var response structs.RegisterResponse
 		json.Unmarshal([]byte(result.Body.String()), &response)
 		return response, result.Body.String()
 	}
@@ -96,35 +97,35 @@ func TestRegisterRequest(t *testing.T) {
 func TestClaimRequest(t *testing.T) {
 	s = Server{}
 	s.Initialize()
-	s.KnownBots["alpha"] = createBot("alpha", []string{})
-	s.KnownBots["beta"] = createBot("beta", []string{"gamma"})
-	s.KnownNodes["gamma"] = createNode("gamma", "beta")
-	s.KnownNodes["delta"] = createNode("delta", "")
+	s.Grid.Bots["alpha"] = createBot("alpha", []string{})
+	s.Grid.Bots["beta"] = createBot("beta", []string{"gamma"})
+	s.Grid.Nodes["gamma"] = createNode("gamma", "beta")
+	s.Grid.Nodes["delta"] = createNode("delta", "")
 
 	route := "/claim"
 
-	getResponse := func(postBody string) (handlers.ClaimResponse, string) {
+	getResponse := func(postBody string) (structs.ClaimResponse, string) {
 		payload := []byte(postBody)
 		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
 		result := executeRequest(request)
 		checkResponseCode(t, http.StatusOK, result.Code)
 
-		var response handlers.ClaimResponse
+		var response structs.ClaimResponse
 		json.Unmarshal([]byte(result.Body.String()), &response)
 		return response, result.Body.String()
 	}
 
 	tt := []struct {
 		payload  string
-		response handlers.ClaimResponse
+		response structs.ClaimResponse
 	}{
-		{`{}`, handlers.ClaimResponse{Success: false, Error: true}},
-		{`{"callsign":"alpha"}`, handlers.ClaimResponse{Success: false, Error: true}},
-		{`{"node":"delta"}`, handlers.ClaimResponse{Success: false, Error: true}},
-		{`{"callsign":"alpha", "node":"delta"}`, handlers.ClaimResponse{Success: true, Error: true}},
-		{`{"callsign":"alpha", "node":"gamma"}`, handlers.ClaimResponse{Success: false, Error: false}},
-		{`{"callsign":"alpha", "node":"delta"}`, handlers.ClaimResponse{Success: false, Error: false}},
-		{`{"callsign":"alpha", "node":"foobar"}`, handlers.ClaimResponse{Success: false, Error: true}},
+		{`{}`, structs.ClaimResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha"}`, structs.ClaimResponse{Success: false, Error: true}},
+		{`{"node":"delta"}`, structs.ClaimResponse{Success: false, Error: true}},
+		{`{"callsign":"alpha", "node":"delta"}`, structs.ClaimResponse{Success: true, Error: true}},
+		{`{"callsign":"alpha", "node":"gamma"}`, structs.ClaimResponse{Success: false, Error: false}},
+		{`{"callsign":"alpha", "node":"delta"}`, structs.ClaimResponse{Success: false, Error: false}},
+		{`{"callsign":"alpha", "node":"foobar"}`, structs.ClaimResponse{Success: false, Error: true}},
 	}
 
 	for _, tc := range tt {
@@ -139,22 +140,22 @@ func TestClaimRequest(t *testing.T) {
 func TestStatusRequest(t *testing.T) {
 	s = Server{}
 	s.Initialize()
-	s.KnownBots["alpha"] = createBot("alpha", []string{})
-	s.KnownBots["beta"] = createBot("beta", []string{"gamma"})
-	s.KnownNodes["gamma"] = createNode("gamma", "beta")
-	betaBot := s.KnownBots["beta"]
+	s.Grid.Bots["alpha"] = createBot("alpha", []string{})
+	s.Grid.Bots["beta"] = createBot("beta", []string{"gamma"})
+	s.Grid.Nodes["gamma"] = createNode("gamma", "beta")
+	betaBot := s.Grid.Bots["beta"]
 	betaBot.DebugMode = true
-	s.KnownBots["beta"] = betaBot
+	s.Grid.Bots["beta"] = betaBot
 
 	route := "/status"
 
-	getResponse := func(postBody string) (handlers.StatusResponse, string) {
+	getResponse := func(postBody string) (structs.StatusResponse, string) {
 		payload := []byte(postBody)
 		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
 		result := executeRequest(request)
 		checkResponseCode(t, http.StatusOK, result.Code)
 
-		var response handlers.StatusResponse
+		var response structs.StatusResponse
 		json.Unmarshal([]byte(result.Body.String()), &response)
 		return response, result.Body.String()
 	}
@@ -181,27 +182,27 @@ func TestStatusRequest(t *testing.T) {
 func TestMineRequest(t *testing.T) {
 	s = Server{}
 	s.Initialize()
-	s.KnownBots["alpha"] = createBot("alpha", []string{})
-	s.KnownBots["beta"] = createBot("beta", []string{"gamma"})
-	s.KnownNodes["gamma"] = createNode("gamma", "beta")
+	s.Grid.Bots["alpha"] = createBot("alpha", []string{})
+	s.Grid.Bots["beta"] = createBot("beta", []string{"gamma"})
+	s.Grid.Nodes["gamma"] = createNode("gamma", "beta")
 
 	route := "/mine"
 
-	getResponse := func(postBody string) (handlers.MineResponse, string) {
+	getResponse := func(postBody string) (structs.MineResponse, string) {
 		payload := []byte(postBody)
 		request, _ := http.NewRequest("POST", route, bytes.NewBuffer(payload))
 		result := executeRequest(request)
 		checkResponseCode(t, http.StatusOK, result.Code)
 
-		var response handlers.MineResponse
+		var response structs.MineResponse
 		json.Unmarshal([]byte(result.Body.String()), &response)
 		return response, result.Body.String()
 	}
 
 	tt := []struct {
 		Payload   string
-		Mined     uint64
-		Remaining uint64
+		Mined     int
+		Remaining int
 		Error     bool
 	}{
 		{`{}`, 0, 0, true},
@@ -222,6 +223,20 @@ func TestMineRequest(t *testing.T) {
 
 func TestScanRequest(t *testing.T) {
 	t.Errorf("Not implemented yet")
+
+	// Test cases:
+	// 1) node too far to the right
+	// 2) node too far to the left
+	// 3) node too far up
+	// 4) node too far down
+	// 5) node too far up but within left/right range
+	// 6) node too far left but within up/down range
+	// 9) node on left edge, before/after overlap (but within range)
+	// 10) node on right edge, before/after overlap (but within range)
+	// 11) node on top edge, before/after overlap (but within range)
+	// 12) node on bottom edge, before/after overlap (within range)
+	// 13) node on left/right/top/bottom edge, after overlap (not within range)
+	// 14) node on right edge, just within scan range (exactly 5 units away)
 }
 
 func TestMoveRequest(t *testing.T) {
@@ -232,16 +247,16 @@ func TestInit(t *testing.T) {
 	s = Server{}
 	s.Initialize()
 
-	if len(s.KnownBots) != 0 {
+	if len(s.Grid.Bots) != 0 {
 		t.Errorf("Known bots wasn't initialized to 0 properly")
 	}
-	if s.Grid.Height != GRID_HEIGHT {
+	if s.Grid.Height == 0 {
 		t.Errorf("Height not initialized properly for grid")
 	}
-	if s.Grid.Width != GRID_WIDTH {
+	if s.Grid.Width == 0 {
 		t.Errorf("Width not initialized properly for grid")
 	}
-	if len(s.Grid.Entities) != 0 {
+	if len(s.Grid.Bots) != 0 {
 		t.Errorf("Grid entities not initialized properly")
 	}
 }

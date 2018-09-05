@@ -1,4 +1,4 @@
-package main
+package handlers_test
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
-	req := handlers.RegisterRequest{
+	req := structs.SimpleRequest{
 		DebugMode: false,
 		Callsign:  "",
 	}
@@ -26,7 +26,7 @@ func TestRegisterUser(t *testing.T) {
 		t.Errorf("Bot wasn't initialized with a location properly")
 	}
 
-	debugReq := handlers.RegisterRequest{
+	debugReq := structs.SimpleRequest{
 		DebugMode: true,
 		Callsign:  "foobar",
 	}
@@ -47,19 +47,19 @@ func TestStatus(t *testing.T) {
 	gammaBot.DebugMode = true
 	knownBots["gamma"] = gammaBot
 
-	validReq := handlers.StatusRequest{Callsign: "beta"}
+	validReq := structs.SimpleRequest{Callsign: "beta"}
 	validResult := handlers.Status(validReq, knownBots)
 	if len(validResult.Bots) != 1 || validResult.Bots[0].Id != "beta" {
 		t.Errorf("Non-debug result should find single bot with valid uuid. Bot found has ID: %s", validResult.Bots[0].Id)
 	}
 
-	invalidReq := handlers.StatusRequest{Callsign: "delta"}
+	invalidReq := structs.SimpleRequest{Callsign: "delta"}
 	invalidResult := handlers.Status(invalidReq, knownBots)
 	if len(invalidResult.Bots) > 0 {
 		t.Errorf("Non-debug result should find no bots with invalid uuid, found: %d", len(invalidResult.Bots))
 	}
 
-	debugReq := handlers.StatusRequest{Callsign: "gamma"}
+	debugReq := structs.SimpleRequest{Callsign: "gamma"}
 	debugResult := handlers.Status(debugReq, knownBots)
 	if len(debugResult.Bots) != 3 {
 		t.Errorf("Debug result should return all bots, found: %d", len(debugResult.Bots))
@@ -77,7 +77,7 @@ func TestRelease(t *testing.T) {
 	knownNodes["epsilon"] = createNode("epsilon", "alpha")
 
 	// Trying to release a non-existent node should result in error
-	nonExistentReq := handlers.ReleaseRequest{Callsign: "alpha", NodeId: "iota"}
+	nonExistentReq := structs.SimpleRequest{Callsign: "alpha", NodeId: "iota"}
 	nonExistentResult := handlers.Release(nonExistentReq, knownNodes, knownBots)
 	if len(knownBots["alpha"].Claims) != 2 {
 		t.Errorf("Non-existent node somehow mutated known bot claims: %d", len(knownBots["alpha"].Claims))
@@ -87,7 +87,7 @@ func TestRelease(t *testing.T) {
 	}
 
 	// Trying to release someone else's node should result in error and not affect the other bot
-	unownedReq := handlers.ReleaseRequest{Callsign: "alpha", NodeId: "delta"}
+	unownedReq := structs.SimpleRequest{Callsign: "alpha", NodeId: "delta"}
 	unownedResult := handlers.Release(unownedReq, knownNodes, knownBots)
 	if len(knownBots["beta"].Claims) != 1 || len(knownBots["alpha"].Claims) != 2 {
 		t.Errorf("Node owned by other bot somehow mutated requesting bots claims")
@@ -97,7 +97,7 @@ func TestRelease(t *testing.T) {
 	}
 
 	// Trying to release your own node should result only in that node being released
-	validReq := handlers.ReleaseRequest{Callsign: "alpha", NodeId: "epsilon"}
+	validReq := structs.SimpleRequest{Callsign: "alpha", NodeId: "epsilon"}
 	validResult := handlers.Release(validReq, knownNodes, knownBots)
 	if !validResult.Success {
 		t.Errorf("Valid node somehow resulted in error response")
@@ -119,7 +119,7 @@ func TestClaim(t *testing.T) {
 	knownNodes["delta"] = createNode("delta", "beta")
 	knownNodes["epsilon"] = createNode("epsilon", "")
 
-	unclaimedReq := handlers.ClaimRequest{
+	unclaimedReq := structs.SimpleRequest{
 		Callsign: "alpha",
 		NodeId:   "epsilon",
 	}
@@ -134,7 +134,7 @@ func TestClaim(t *testing.T) {
 		t.Errorf("Claiming node didn't add claim to node's property")
 	}
 
-	claimedReq := handlers.ClaimRequest{
+	claimedReq := structs.SimpleRequest{
 		Callsign: "alpha",
 		NodeId:   "delta",
 	}
@@ -149,7 +149,7 @@ func TestClaim(t *testing.T) {
 		t.Errorf("Claiming node owned by other bot shouldn't change node's claim")
 	}
 
-	alreadyClaimedReq := handlers.ClaimRequest{
+	alreadyClaimedReq := structs.SimpleRequest{
 		Callsign: "alpha",
 		NodeId:   "epsilon",
 	}

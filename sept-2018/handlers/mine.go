@@ -4,25 +4,12 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
-type MineRequest struct {
-	Callsign string `json:"callsign"`
-	NodeId   string `json:"node"`
-}
-
-type MineResponse struct {
-	Callsign        string
-	NodeId          string
-	Error           bool
-	AmountMined     uint64
-	AmountRemaining uint64
-}
-
 // Mine extracts some resources from a given node.
 // The amount extracted is deducted from the node, given to the bot, and returned in the response.
 // The response "Error" flag will be set to true if the callsign doesn't own this node
-func Mine(req MineRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) MineResponse {
+func Mine(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) structs.MineResponse {
 
-	resp := MineResponse{
+	resp := structs.MineResponse{
 		Callsign:        req.Callsign,
 		NodeId:          req.NodeId,
 		Error:           false,

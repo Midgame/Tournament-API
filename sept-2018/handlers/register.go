@@ -6,19 +6,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type RegisterRequest struct {
-	DebugMode bool   `json:"debug,string,omitempty"`
-	Callsign  string `json:"callsign,omitempty"`
-}
-
-type RegisterResponse struct {
-	Callsign  string
-	DebugMode bool
-}
-
 // registerUser generates a new UUID for a user, adds that UUID to the list of known bots,
 // and then returns the bot entity.
-func RegisterUser(req RegisterRequest) (structs.Bot, RegisterResponse) {
+func RegisterUser(req structs.SimpleRequest) (structs.Bot, structs.RegisterResponse) {
 	if req.Callsign == "" {
 		req.Callsign = uuid.New().String()
 	}
@@ -35,7 +25,7 @@ func RegisterUser(req RegisterRequest) (structs.Bot, RegisterResponse) {
 		Claims:    []string{},
 	}
 
-	response := RegisterResponse{
+	response := structs.RegisterResponse{
 		Callsign:  bot.Id,
 		DebugMode: bot.DebugMode,
 	}

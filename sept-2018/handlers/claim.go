@@ -4,25 +4,13 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
-type ClaimRequest struct {
-	Callsign string `json:"callsign"`
-	NodeId   string `json:"node"`
-}
-
-type ClaimResponse struct {
-	Callsign string
-	NodeId   string
-	Error    bool
-	Success  bool
-}
-
 // Claim establishes a claim on a node
 // If this node is currently owned by another bot, returns Success: false.
 // If this node does not exist, returns Error: true.
 // Returns a success otherwise.
-func Claim(req ClaimRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) ClaimResponse {
+func Claim(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) structs.ClaimResponse {
 
-	resp := ClaimResponse{
+	resp := structs.ClaimResponse{
 		Callsign: req.Callsign,
 		NodeId:   req.NodeId,
 		Error:    false,

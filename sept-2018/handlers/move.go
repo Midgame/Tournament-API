@@ -4,20 +4,9 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
-type MoveRequest struct {
-	Callsign string `json:"callsign"`
-	X        int    `json:"x,string"`
-	Y        int    `json:"y,string"`
-}
-
-type MoveResponse struct {
-	Location structs.GridLocation
-	Error    bool
-}
-
 // Move determines if a move is valid for a given callsign, and updates the bot's location if so (and returns the new location)
-func Move(req MoveRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot, grid structs.Grid) MoveResponse {
-	resp := MoveResponse{
+func Move(req structs.MoveRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot, grid structs.Grid) structs.MoveResponse {
+	resp := structs.MoveResponse{
 		Error: false,
 	}
 

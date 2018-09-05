@@ -4,21 +4,12 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
-type StatusRequest struct {
-	Callsign string `json:"callsign"`
-}
-
-type StatusResponse struct {
-	Bots  []structs.BotStatus
-	Error bool
-}
-
 // Status returns information about the requesting user's:
 // Location, Claims, Total score
 // If in debug mode, also returns this information for all other known bots
-func Status(req StatusRequest, knownBots map[string]structs.Bot) StatusResponse {
+func Status(req structs.SimpleRequest, knownBots map[string]structs.Bot) structs.StatusResponse {
 	botList := []structs.BotStatus{}
-	resp := StatusResponse{
+	resp := structs.StatusResponse{
 		Bots:  botList,
 		Error: false,
 	}

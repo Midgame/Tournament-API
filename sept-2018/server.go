@@ -11,16 +11,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	GRID_WIDTH  = 100
-	GRID_HEIGHT = 100
-)
-
 type Server struct {
-	Router     *mux.Router
-	KnownBots  map[string]structs.Bot
-	KnownNodes map[string]structs.Node
-	Grid       structs.Grid
+	Router *mux.Router
+	Grid   structs.Grid
 }
 
 // Writes out to the provided response writer with a JSON response. Only when response is successful.
@@ -37,102 +30,90 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
-func (s *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
-	var req handlers.StatusRequest
+func createSimpleRequest(w http.ResponseWriter, r *http.Request) (structs.SimpleRequest, error) {
+	var req structs.SimpleRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
 		respondWithError(w, http.StatusBadRequest, errorMsg)
-		return
+		return req, err
 	}
 	defer r.Body.Close()
+	return req, nil
+}
 
-	response := handlers.Status(req, s.KnownBots)
+func (s *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
+	req, err := createSimpleRequest(w, r)
+	if err != nil {
+		return
+	}
+
+	response := handlers.Status(req, s.Grid.Bots)
 	json.NewEncoder(w).Encode(response)
 }
 
 // releaseHandler releases a claim on a node.
 func (s *Server) releaseHandler(w http.ResponseWriter, r *http.Request) {
-	var req handlers.ReleaseRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
-		respondWithError(w, http.StatusBadRequest, errorMsg)
+	req, err := createSimpleRequest(w, r)
+	if err != nil {
 		return
 	}
-	defer r.Body.Close()
 
-	response := handlers.Release(req, s.KnownNodes, s.KnownBots)
+	response := handlers.Release(req, s.Grid.Nodes, s.Grid.Bots)
 	json.NewEncoder(w).Encode(response)
 }
 
 // claimHandler accepts a claim from an existing callsign.
 func (s *Server) claimHandler(w http.ResponseWriter, r *http.Request) {
-	var req handlers.ClaimRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
-		respondWithError(w, http.StatusBadRequest, errorMsg)
+	req, err := createSimpleRequest(w, r)
+	if err != nil {
 		return
 	}
-	defer r.Body.Close()
 
-	response := handlers.Claim(req, s.KnownNodes, s.KnownBots)
+	response := handlers.Claim(req, s.Grid.Nodes, s.Grid.Bots)
 	json.NewEncoder(w).Encode(response)
 }
 
 // registrationHandler accepts registration from a new bot.
 func (s *Server) registrationHandler(w http.ResponseWriter, r *http.Request) {
-	var req handlers.RegisterRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
-		respondWithError(w, http.StatusBadRequest, errorMsg)
+	req, err := createSimpleRequest(w, r)
+	if err != nil {
 		return
 	}
-	defer r.Body.Close()
 
 	bot, response := handlers.RegisterUser(req)
-	s.KnownBots[bot.Id] = bot
+	s.Grid.Bots[bot.Id] = bot
 
 	json.NewEncoder(w).Encode(response)
 }
 
 // mineHandler accepts a mining request from a given callsign and node id.
 func (s *Server) mineHandler(w http.ResponseWriter, r *http.Request) {
-	var req handlers.MineRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
-		respondWithError(w, http.StatusBadRequest, errorMsg)
+	req, err := createSimpleRequest(w, r)
+	if err != nil {
 		return
 	}
-	defer r.Body.Close()
 
-	response := handlers.Mine(req, s.KnownNodes, s.KnownBots)
+	response := handlers.Mine(req, s.Grid.Nodes, s.Grid.Bots)
 
 	json.NewEncoder(w).Encode(response)
 }
 
 // scanHandler accepts a scan request and returns information around a given callsign
 func (s *Server) scanHandler(w http.ResponseWriter, r *http.Request) {
-	var req handlers.ScanRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
-		respondWithError(w, http.StatusBadRequest, errorMsg)
+	req, err := createSimpleRequest(w, r)
+	if err != nil {
 		return
 	}
-	defer r.Body.Close()
 
-	response := handlers.Scan(req, s.KnownNodes, s.KnownBots, s.Grid)
+	response := handlers.Scan(req, s.Grid.Nodes, s.Grid.Bots, s.Grid)
 
 	json.NewEncoder(w).Encode(response)
 }
 
 // moveHandler accepts a move request from a given callsign and moves it to the requested location
 func (s *Server) moveHandler(w http.ResponseWriter, r *http.Request) {
-	var req handlers.MoveRequest
+	var req structs.MoveRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
@@ -141,16 +122,15 @@ func (s *Server) moveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	response := handlers.Move(req, s.KnownNodes, s.KnownBots, s.Grid)
+	response := handlers.Move(req, s.Grid.Nodes, s.Grid.Bots, s.Grid)
 
 	json.NewEncoder(w).Encode(response)
 }
 
 // Initializes the server with some defaults
 func (s *Server) Initialize() {
-	s.KnownBots = make(map[string]structs.Bot)
-	s.KnownNodes = make(map[string]structs.Node)
-	s.Grid = structs.Grid{Width: GRID_WIDTH, Height: GRID_HEIGHT, Entities: [][]structs.GridEntity{}}
+	s.Grid = structs.Grid{}
+	s.Grid.Initialize()
 	s.Router = mux.NewRouter()
 	s.initializeRoutes()
 }

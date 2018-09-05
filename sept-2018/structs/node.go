@@ -3,7 +3,7 @@ package structs
 type Node struct {
 	GridEntity
 	ClaimedBy string
-	Value     uint64
+	Value     int
 }
 
 type NodeStatus struct {

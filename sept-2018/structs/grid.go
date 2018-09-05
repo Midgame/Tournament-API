@@ -1,5 +1,12 @@
 package structs
 
+import (
+	"math/rand"
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type EntityType int
 
 const (
@@ -7,7 +14,13 @@ const (
 	NODE
 )
 
-const SCAN_RANGE = 5
+const (
+	SCAN_RANGE      = 5
+	GRID_WIDTH      = 100
+	GRID_HEIGHT     = 100
+	NUMBER_OF_NODES = 20
+	MAX_NODE_VALUE  = 20
+)
 
 type GridEntity struct {
 	Type     EntityType
@@ -16,14 +29,15 @@ type GridEntity struct {
 }
 
 type Grid struct {
-	Width    uint64
-	Height   uint64
-	Entities [][]GridEntity
+	Width  int
+	Height int
+	Bots   map[string]Bot
+	Nodes  map[string]Node
 }
 
 type GridLocation struct {
-	X uint64
-	Y uint64
+	X int
+	Y int
 }
 
 // Determines if a number is within a certain distance of a value. Accounts for wrapping around
@@ -31,20 +45,6 @@ type GridLocation struct {
 func NumberWithinRange(value int, distance int, maxValue int, testValue int) bool {
 	minDist := value - distance
 	maxDist := value + distance
-
-	// Test cases:
-	// 1) node too far to the right
-	// 2) node too far to the left
-	// 3) node too far up
-	// 4) node too far down
-	// 5) node too far up but within left/right range
-	// 6) node too far left but within up/down range
-	// 9) node on left edge, before/after overlap (but within range)
-	// 10) node on right edge, before/after overlap (but within range)
-	// 11) node on top edge, before/after overlap (but within range)
-	// 12) node on bottom edge, before/after overlap (within range)
-	// 13) node on left/right/top/bottom edge, after overlap (not within range)
-	// 14) node on right edge, just within scan range (exactly 5 units away)
 
 	withinRange := func(min int, max int, number int) bool {
 		return min <= number && max >= number
@@ -84,17 +84,51 @@ func NumberWithinRange(value int, distance int, maxValue int, testValue int) boo
 // the provided bot. False otherwise.
 func (grid Grid) ScannableByBot(node Node, bot Bot) bool {
 
-	return NumberWithinRange(int(bot.Location.X), SCAN_RANGE, int(grid.Width), int(node.Location.X)) &&
-		NumberWithinRange(int(bot.Location.Y), SCAN_RANGE, int(grid.Height), int(node.Location.Y))
+	return NumberWithinRange(bot.Location.X, SCAN_RANGE, grid.Width, node.Location.X) &&
+		NumberWithinRange(bot.Location.Y, SCAN_RANGE, grid.Height, node.Location.Y)
 }
 
 func (grid Grid) MoveBot(bot Bot, x int, y int) GridLocation {
 	// Is this a valid move for the bot?
-	validMove := NumberWithinRange(int(bot.Location.X), 1, int(grid.Width), x) &&
-		NumberWithinRange(int(bot.Location.Y), 1, int(grid.Height), y)
+	validMove := NumberWithinRange(bot.Location.X, 1, grid.Width, x) &&
+		NumberWithinRange(int(bot.Location.Y), 1, grid.Height, y)
 
 	if validMove {
-		bot.Location = GridLocation{X: uint64(x), Y: uint64(y)}
+		bot.Location = GridLocation{X: x, Y: y}
 	}
 	return bot.Location
+}
+
+func (grid Grid) initializeNodes() map[string]Node {
+	nodeMap := make(map[string]Node)
+	for idx := 0; idx < NUMBER_OF_NODES; idx++ {
+		source := rand.NewSource(time.Now().UnixNano())
+		random := rand.New(source)
+		x := random.Intn(grid.Width + 1)
+		y := random.Intn(grid.Height + 1)
+		value := random.Intn(MAX_NODE_VALUE + 1)
+
+		node := Node{
+			GridEntity: GridEntity{
+				Id:   uuid.New().String(),
+				Type: NODE,
+				Location: GridLocation{
+					X: x,
+					Y: y,
+				},
+			},
+			ClaimedBy: "",
+			Value:     value,
+		}
+		nodeMap[node.Id] = node
+	}
+
+	return nodeMap
+}
+
+func (grid *Grid) Initialize() {
+	grid.Width = GRID_WIDTH
+	grid.Height = GRID_HEIGHT
+	grid.Bots = make(map[string]Bot)
+	grid.Nodes = grid.initializeNodes()
 }

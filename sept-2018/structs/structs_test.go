@@ -1,4 +1,4 @@
-package main
+package structs_test
 
 import (
 	"testing"

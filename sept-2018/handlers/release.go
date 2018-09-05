@@ -4,22 +4,12 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 )
 
-type ReleaseRequest struct {
-	Callsign string `json:"callsign"`
-	NodeId   string `json:"node"`
-}
-
-type ReleaseResponse struct {
-	Success bool
-	Error   bool
-}
-
 // Release releases a claim on a node
 // If this is not a node owned by the requestor, returns an error.
 // Returns an :ok otherwise.
-func Release(req ReleaseRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) ReleaseResponse {
+func Release(req structs.SimpleRequest, knownNodes map[string]structs.Node, knownBots map[string]structs.Bot) structs.ReleaseResponse {
 
-	resp := ReleaseResponse{
+	resp := structs.ReleaseResponse{
 		Error:   true,
 		Success: false,
 	}
