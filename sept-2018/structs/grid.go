@@ -19,7 +19,7 @@ const (
 	SCAN_RANGE      = 5
 	GRID_WIDTH      = 100
 	GRID_HEIGHT     = 100
-	NUMBER_OF_NODES = 20
+	NUMBER_OF_NODES = 80
 	MAX_NODE_VALUE  = 20
 )
 
@@ -74,12 +74,12 @@ func (grid Grid) ScannableByBot(node Node, bot Bot) bool {
 		NumberWithinRange(bot.Location.Y, SCAN_RANGE, grid.Height, node.Location.Y)
 }
 
-func (grid Grid) MoveBot(bot Bot, x int, y int) GridLocation {
+func (grid Grid) MoveBot(bot Bot, x int, y int, debugMode bool) GridLocation {
 	// Is this a valid move for the bot?
 	validMove := NumberWithinRange(bot.Location.X, 1, grid.Width, x) &&
 		NumberWithinRange(bot.Location.Y, 1, grid.Height, y)
 
-	if validMove {
+	if validMove || debugMode {
 		bot.Location = GridLocation{X: x, Y: y}
 	}
 	return bot.Location

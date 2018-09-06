@@ -1,9 +1,9 @@
 package structs
 
 type MoveRequest struct {
-	Callsign string `json:"callsign"`
-	X        int    `json:"x,string"`
-	Y        int    `json:"y,string"`
+	SimpleRequest
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 type SimpleRequest struct {

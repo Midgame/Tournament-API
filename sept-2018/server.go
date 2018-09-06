@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/handlers"
 	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
 
+	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 )
 
@@ -33,8 +35,10 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 func createSimpleRequest(w http.ResponseWriter, r *http.Request) (structs.SimpleRequest, error) {
 	var req structs.SimpleRequest
 	decoder := json.NewDecoder(r.Body)
+	glog.Infof("Received request with payload: %v", r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		glog.Infof("Invalid request: %v", r.Body)
 		respondWithError(w, http.StatusBadRequest, errorMsg)
 		return req, err
 	}
@@ -48,7 +52,7 @@ func (s *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := handlers.Status(req, s.Grid.Bots)
+	response := handlers.Status(req, s.Grid.Nodes, s.Grid.Bots)
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -112,8 +116,10 @@ func (s *Server) scanHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) moveHandler(w http.ResponseWriter, r *http.Request) {
 	var req structs.MoveRequest
 	decoder := json.NewDecoder(r.Body)
+	glog.Infof("Received request with payload: %v", r.Form.Encode())
 	if err := decoder.Decode(&req); err != nil {
-		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Body)
+		errorMsg := fmt.Sprintf("Invalid request payload: %v", r.Form.Encode())
+		glog.Infof("Invalid request: %v", err)
 		respondWithError(w, http.StatusBadRequest, errorMsg)
 		return
 	}
@@ -122,6 +128,7 @@ func (s *Server) moveHandler(w http.ResponseWriter, r *http.Request) {
 	response := handlers.Move(req, s.Grid.Bots, s.Grid)
 
 	json.NewEncoder(w).Encode(response)
+	glog.Flush()
 }
 
 // Initializes the server with some defaults
@@ -144,5 +151,10 @@ func (s *Server) initializeRoutes() {
 }
 
 func (s *Server) Run() {
-	http.Handle("/", s.Router)
+	port := ":5000"
+	flag.Parse()
+
+	glog.Info("Starting on port ", port)
+	glog.Flush()
+	http.ListenAndServe(port, s.Router)
 }

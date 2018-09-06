@@ -8,16 +8,18 @@ import (
 func Move(req structs.MoveRequest, knownBots map[string]structs.Bot, grid structs.Grid) structs.StatusResponse {
 	resp := structs.StatusResponse{
 		Bots:  []structs.BotStatus{},
+		Nodes: []structs.NodeStatus{},
 		Error: false,
 	}
 
 	bot, ok := knownBots[req.Callsign]
 	if !ok {
 		resp.Error = true
+		resp.ErrorMsg = BOT_NOT_FOUND_ERROR
 		return resp
 	}
 
-	newLocation := grid.MoveBot(bot, req.X, req.Y)
+	newLocation := grid.MoveBot(bot, req.X, req.Y, req.DebugMode)
 	bot.Location = newLocation
 	knownBots[bot.Id] = bot
 	resp.Bots = []structs.BotStatus{bot.GetStatus()}

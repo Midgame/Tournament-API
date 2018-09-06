@@ -7,23 +7,20 @@ import (
 // Status returns information about the requesting user's:
 // Location, Claims, Total score
 // If in debug mode, also returns this information for all other known bots
-func Status(req structs.SimpleRequest, knownBots map[string]structs.Bot) structs.StatusResponse {
-	botList := []structs.BotStatus{}
-	resp := structs.StatusResponse{
-		Bots:  botList,
-		Error: false,
-	}
-
-	bot, ok := knownBots[req.Callsign]
-	if !ok {
-		resp.Error = true
+func Status(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[string]structs.Bot) structs.StatusResponse {
+	resp := CheckParams(req, nodes, bots, false)
+	if resp.Error {
 		return resp
 	}
+	bot := bots[req.Callsign]
 
-	// In debug mode, return all bots
-	if bot.DebugMode {
-		for _, bot := range knownBots {
+	// In debug mode, return all bots and nodes
+	if req.DebugMode {
+		for _, bot := range bots {
 			resp.Bots = append(resp.Bots, bot.GetStatus())
+		}
+		for _, node := range nodes {
+			resp.Nodes = append(resp.Nodes, node.GetStatus())
 		}
 		return resp
 	}

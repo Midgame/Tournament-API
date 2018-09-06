@@ -14,8 +14,7 @@ type BotStatus struct {
 	Score    int
 }
 
-// GetStatus returns some basic information about this bot, including Location, Claims, Actions, and Score
-// TODO: Actions need to be a real thing
+// GetStatus returns some basic information about this bot, including Location, Claims, and Score
 func (bot Bot) GetStatus() BotStatus {
 	return BotStatus{
 		Claims:   bot.Claims,

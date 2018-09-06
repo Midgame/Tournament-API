@@ -9,6 +9,8 @@ import (
 // registerUser generates a new UUID for a user, adds that UUID to the list of known bots,
 // and then returns the bot entity.
 func RegisterUser(req structs.SimpleRequest, grid structs.Grid) (structs.Bot, structs.StatusResponse) {
+	// TODO: Error out if callsign already chosen
+
 	if req.Callsign == "" {
 		req.Callsign = uuid.New().String()
 	}
