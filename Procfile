@@ -1,1 +1,1 @@
-web: Tournament-API
+web: Tournament-API -logtostderr=true

@@ -175,5 +175,5 @@ func (s *Server) Run() {
 
 	glog.Info("Starting on port ", port)
 	glog.Flush()
-	http.ListenAndServe(port, s.Router)
+    http.ListenAndServe(":"+port, s.Router)
 }
