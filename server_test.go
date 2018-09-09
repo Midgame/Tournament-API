@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	. "github.com/HeadlightLabs/Tournament-API/sept-2018"
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+	. "github.com/HeadlightLabs/Tournament-API"
+	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
 var (
