@@ -169,7 +169,7 @@ func (s *Server) initializeRoutes() {
 }
 
 func (s *Server) Run() {
-	port := ":5000"
+	port := os.Getenv("PORT")
 	flag.Parse()
 
 	glog.Info("Starting on port ", port)
