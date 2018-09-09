@@ -46,16 +46,6 @@ func createSimpleRequest(w http.ResponseWriter, r *http.Request) (structs.Simple
 	return req, nil
 }
 
-func (s *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
-	req, err := createSimpleRequest(w, r)
-	if err != nil {
-		return
-	}
-
-	response := handlers.Status(req, s.Grid.Nodes, s.Grid.Bots)
-	json.NewEncoder(w).Encode(response)
-}
-
 // releaseHandler releases a claim on a node.
 func (s *Server) releaseHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := createSimpleRequest(w, r)
@@ -144,7 +134,6 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/register", s.registrationHandler).Methods("POST")
 	s.Router.HandleFunc("/claim", s.claimHandler).Methods("POST")
 	s.Router.HandleFunc("/release", s.releaseHandler).Methods("POST")
-	s.Router.HandleFunc("/status", s.statusHandler).Methods("POST")
 	s.Router.HandleFunc("/mine", s.mineHandler).Methods("POST")
 	s.Router.HandleFunc("/scan", s.scanHandler).Methods("POST")
 	s.Router.HandleFunc("/move", s.moveHandler).Methods("POST")

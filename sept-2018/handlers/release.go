@@ -15,10 +15,10 @@ func Release(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[
 	}
 	bot := bots[req.Callsign]
 	node := nodes[req.NodeId]
+	resp.Error = true
+	resp.ErrorMsg = NOT_CLAIMED_ERROR
 
 	// Check if this node is owned by the requestor
-	// TODO: Should rewrite this in a way that makes sense. Don't unclaim node if bot doesn't
-	// actually own it.
 	for idx, claim := range bots[req.Callsign].Claims {
 		if claim == node.Id {
 
@@ -31,6 +31,10 @@ func Release(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[
 			bot.Claims[len(bot.Claims)-1] = ""
 			bot.Claims = bot.Claims[:len(bot.Claims)-1]
 			bots[req.Callsign] = bot
+
+			// Update response
+			resp.Error = false
+			resp.ErrorMsg = ""
 		}
 	}
 

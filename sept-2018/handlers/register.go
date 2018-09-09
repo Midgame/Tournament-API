@@ -14,7 +14,7 @@ func RegisterUser(req structs.SimpleRequest, grid structs.Grid) (structs.Bot, st
 	if req.Callsign == "" {
 		req.Callsign = uuid.New().String()
 	}
-	bot := grid.InitializeBot(req.Callsign, req.DebugMode)
+	bot := grid.InitializeBot(req.Callsign)
 
 	response := structs.StatusResponse{
 		Bots: []structs.BotStatus{bot.GetStatus()},

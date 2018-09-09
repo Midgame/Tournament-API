@@ -24,18 +24,9 @@ func Claim(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[st
 
 	// If this node is owned by someone else, return
 	if node.ClaimedBy != "" && node.ClaimedBy != req.Callsign {
-
-		// In debug mode, allow people to steal claims from each other
-		if req.DebugMode {
-			otherBot := bots[node.ClaimedBy]
-			node.ClaimedBy = ""
-			otherBot.Claims = removeFromSlice(node.Id, otherBot.Claims)
-		} else { // Otherwise, return an error
-			resp.Error = true
-			resp.ErrorMsg = ALREADY_CLAIMED_ERROR
-			return resp
-		}
-
+		resp.Error = true
+		resp.ErrorMsg = ALREADY_CLAIMED_ERROR
+		return resp
 	}
 
 	bot.Claims = append(bot.Claims, node.Id)

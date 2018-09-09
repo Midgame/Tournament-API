@@ -19,14 +19,14 @@ func Mine(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[str
 	node := nodes[req.NodeId]
 
 	// If this node is owned by someone else or unowned, return an error except in debug mode
-	if node.ClaimedBy != req.Callsign && !req.DebugMode {
+	if node.ClaimedBy != req.Callsign {
 		resp.Error = true
 		resp.ErrorMsg = ALREADY_CLAIMED_ERROR
 		return resp
 	}
 
 	// If this node has no value left, this is a no-op except in debug mode
-	if node.Value > 0 || req.DebugMode {
+	if node.Value > 0 {
 		bot.Score += 1
 	}
 	node.Value = int(math.Max(float64(0), float64(node.Value-1)))

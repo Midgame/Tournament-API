@@ -52,18 +52,6 @@ func TestClaimRequest(t *testing.T) {
 	testRoute(route, tt, t)
 }
 
-func TestStatusRequest(t *testing.T) {
-	route := "/status"
-
-	tt := []testCase{
-		{`{}`, 200, createStatusResponse(true)},                    // No params
-		{`{"callsign":"alpha"}`, 200, createStatusResponse(false)}, // Valid params
-		{`{"callsign":"delta"}`, 200, createStatusResponse(true)},  // Invalid bot
-	}
-
-	testRoute(route, tt, t)
-}
-
 func TestMineRequest(t *testing.T) {
 	route := "/mine"
 

@@ -1,13 +1,12 @@
 package structs
 
 type MoveRequest struct {
-	SimpleRequest
-	X int `json:"x"`
-	Y int `json:"y"`
+	Callsign string `json:"callsign"`
+	X        int    `json:"x,string"`
+	Y        int    `json:"y,string"`
 }
 
 type SimpleRequest struct {
-	Callsign  string `json:"callsign"`
-	DebugMode bool   `json:"debug,string,omitempty"`
-	NodeId    string `json:"node,omitempty"`
+	Callsign string `json:"callsign"`
+	NodeId   string `json:"node,omitempty"`
 }

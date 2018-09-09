@@ -132,8 +132,7 @@ func TestRegisterUser(t *testing.T) {
 	grid.Initialize()
 
 	req := structs.SimpleRequest{
-		DebugMode: false,
-		Callsign:  "",
+		Callsign: "",
 	}
 	bot, response := handlers.RegisterUser(req, grid)
 	if response.Bots[0].Id != bot.Id {
@@ -150,42 +149,11 @@ func TestRegisterUser(t *testing.T) {
 	}
 
 	debugReq := structs.SimpleRequest{
-		DebugMode: true,
-		Callsign:  "foobar",
+		Callsign: "foobar",
 	}
 	debugBot, _ := handlers.RegisterUser(debugReq, grid)
 	if debugBot.Id != "foobar" {
 		t.Errorf("Register function didn't accept callsign. Assigned: %s", bot.Id)
-	}
-	if !debugBot.DebugMode {
-		t.Errorf("Register function didn't accept debug flag properly.")
-	}
-}
-
-func TestStatus(t *testing.T) {
-	knownBots := make(map[string]structs.Bot)
-	knownBots["alpha"] = createBot("alpha", []string{})
-	knownBots["beta"] = createBot("beta", []string{})
-	gammaBot := createBot("gamma", []string{})
-	gammaBot.DebugMode = true
-	knownBots["gamma"] = gammaBot
-
-	validReq := structs.SimpleRequest{Callsign: "beta"}
-	validResult := handlers.Status(validReq, knownBots)
-	if len(validResult.Bots) != 1 || validResult.Bots[0].Id != "beta" {
-		t.Errorf("Non-debug result should find single bot with valid uuid. Bot found has ID: %s", validResult.Bots[0].Id)
-	}
-
-	invalidReq := structs.SimpleRequest{Callsign: "delta"}
-	invalidResult := handlers.Status(invalidReq, knownBots)
-	if len(invalidResult.Bots) > 0 {
-		t.Errorf("Non-debug result should find no bots with invalid uuid, found: %d", len(invalidResult.Bots))
-	}
-
-	debugReq := structs.SimpleRequest{Callsign: "gamma"}
-	debugResult := handlers.Status(debugReq, knownBots)
-	if len(debugResult.Bots) != 3 {
-		t.Errorf("Debug result should return all bots, found: %d", len(debugResult.Bots))
 	}
 }
 

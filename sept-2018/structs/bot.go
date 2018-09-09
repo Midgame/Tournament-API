@@ -2,9 +2,8 @@ package structs
 
 type Bot struct {
 	GridEntity
-	DebugMode bool
-	Claims    []string
-	Score     int
+	Claims []string
+	Score  int
 }
 
 type BotStatus struct {

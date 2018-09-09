@@ -19,7 +19,7 @@ func Move(req structs.MoveRequest, knownBots map[string]structs.Bot, grid struct
 		return resp
 	}
 
-	newLocation := grid.MoveBot(bot, req.X, req.Y, req.DebugMode)
+	newLocation := grid.MoveBot(bot, req.X, req.Y)
 	bot.Location = newLocation
 	knownBots[bot.Id] = bot
 	resp.Bots = []structs.BotStatus{bot.GetStatus()}
