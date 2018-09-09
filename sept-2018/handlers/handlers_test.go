@@ -54,7 +54,7 @@ func TestMine(t *testing.T) {
 		}
 
 		remaining := actual.Nodes[0].Value
-		score := actual.Bots[0].Score
+		score := actual.Status.Score
 		if remaining != tc.expRemaining || score != tc.expScore {
 			t.Errorf("[Mine] Actual and expected different. Actual (remaining, score): (%d,%d). Expected: (%d,%d)", remaining, score, tc.expRemaining, tc.expScore)
 		}
@@ -121,8 +121,8 @@ func TestMove(t *testing.T) {
 			expected = makeExpResp(callSign, tc.x, tc.y, false)
 		}
 
-		if actual.Bots[0].Location != expected {
-			t.Errorf("Move function didn't return expected result: %v. Actual: %v", expected, actual.Bots[0].Location)
+		if actual.Status.Location != expected {
+			t.Errorf("Move function didn't return expected result: %v. Actual: %v", expected, actual.Status.Location)
 		}
 	}
 }
@@ -135,7 +135,7 @@ func TestRegisterUser(t *testing.T) {
 		Callsign: "",
 	}
 	bot, response := handlers.RegisterUser(req, grid)
-	if response.Bots[0].Id != bot.Id {
+	if response.Status.Id != bot.Id {
 		t.Errorf("Response didn't return the correct UUID")
 	}
 	if bot.Id == "" {

@@ -26,7 +26,6 @@ func removeFromSlice(key string, arr []string) []string {
 func CheckParams(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[string]structs.Bot, checkNodes bool) structs.StatusResponse {
 	resp := structs.StatusResponse{
 		Error: false,
-		Bots:  []structs.BotStatus{},
 		Nodes: []structs.NodeStatus{},
 	}
 
@@ -37,7 +36,7 @@ func CheckParams(req structs.SimpleRequest, nodes map[string]structs.Node, bots 
 		resp.ErrorMsg = BOT_NOT_FOUND_ERROR
 		return resp
 	}
-	resp.Bots = []structs.BotStatus{bot.GetStatus()}
+	resp.Status = bot.GetStatus()
 
 	// Some handlers don't care about nodes
 	if !checkNodes {

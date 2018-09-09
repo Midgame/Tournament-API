@@ -35,7 +35,7 @@ func Mine(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[str
 	bots[req.Callsign] = bot
 	nodes[req.NodeId] = node
 	resp.Nodes = []structs.NodeStatus{node.GetStatus()}
-	resp.Bots = []structs.BotStatus{bot.GetStatus()}
+	resp.Status = bot.GetStatus()
 
 	return resp
 }

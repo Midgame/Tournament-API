@@ -34,7 +34,7 @@ func Claim(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[st
 	nodes[req.NodeId] = node
 	bots[req.Callsign] = bot
 	resp.Nodes = []structs.NodeStatus{node.GetStatus()}
-	resp.Bots = []structs.BotStatus{bot.GetStatus()}
+	resp.Status = bot.GetStatus()
 
 	return resp
 }

@@ -38,7 +38,7 @@ func Release(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[
 		}
 	}
 
-	resp.Bots = []structs.BotStatus{bot.GetStatus()}
+	resp.Status = bot.GetStatus()
 	resp.Nodes = []structs.NodeStatus{node.GetStatus()}
 
 	return resp

@@ -17,7 +17,7 @@ func RegisterUser(req structs.SimpleRequest, grid structs.Grid) (structs.Bot, st
 	bot := grid.InitializeBot(req.Callsign)
 
 	response := structs.StatusResponse{
-		Bots: []structs.BotStatus{bot.GetStatus()},
+		Status: bot.GetStatus(),
 	}
 
 	return bot, response

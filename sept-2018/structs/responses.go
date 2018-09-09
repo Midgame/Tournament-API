@@ -1,9 +1,8 @@
 package structs
 
 type StatusResponse struct {
-	Bots      []BotStatus
-	Nodes     []NodeStatus
-	DebugMode bool
-	Error     bool
-	ErrorMsg  string
+	Status   BotStatus
+	Nodes    []NodeStatus
+	Error    bool
+	ErrorMsg string
 }
