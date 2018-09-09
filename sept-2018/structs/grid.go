@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/google/uuid"
 )
 
@@ -54,15 +55,14 @@ func NumberWithinRange(value int, distance int, maxValue int, testValue int) boo
 	}
 
 	return withinRange(minDist, maxDist, testValue)
-
 }
 
-func (grid Grid) randomInitVals() (int, int, int) {
+func (grid Grid) RandomInitVals() (int, int, int) {
 	source := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(source)
 	x := random.Intn(grid.Width + 1)
 	y := random.Intn(grid.Height + 1)
-	value := random.Intn(MAX_NODE_VALUE + 1)
+	value := random.Intn(MAX_NODE_VALUE+1) + 1
 	return x, y, value
 }
 
@@ -81,12 +81,14 @@ func (grid Grid) MoveBot(bot Bot, x int, y int) GridLocation {
 
 	if validMove {
 		bot.Location = GridLocation{X: x, Y: y}
+	} else {
+		glog.Infof("[grid.MoveBot]: Invalid move for Bot: %s from (%d,%d) to (%d,%d).", bot.Id, bot.Location.X, bot.Location.Y, x, y)
 	}
 	return bot.Location
 }
 
 func (grid Grid) InitializeBot(callsign string) Bot {
-	x, y, _ := grid.randomInitVals()
+	x, y, _ := grid.RandomInitVals()
 	bot := Bot{
 		GridEntity: GridEntity{
 			Id:   callsign,
@@ -101,10 +103,10 @@ func (grid Grid) InitializeBot(callsign string) Bot {
 	return bot
 }
 
-func (grid Grid) initializeNodes() map[string]Node {
+func (grid Grid) InitializeNodes() map[string]Node {
 	nodeMap := make(map[string]Node)
 	for idx := 0; idx < NUMBER_OF_NODES; idx++ {
-		x, y, value := grid.randomInitVals()
+		x, y, value := grid.RandomInitVals()
 
 		node := Node{
 			GridEntity: GridEntity{
@@ -128,5 +130,5 @@ func (grid *Grid) Initialize() {
 	grid.Width = GRID_WIDTH
 	grid.Height = GRID_HEIGHT
 	grid.Bots = make(map[string]Bot)
-	grid.Nodes = grid.initializeNodes()
+	grid.Nodes = grid.InitializeNodes()
 }

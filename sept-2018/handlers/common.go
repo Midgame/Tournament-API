@@ -10,6 +10,7 @@ const (
 	NODE_NOT_FOUND_ERROR  = "node_not_found"
 	ALREADY_CLAIMED_ERROR = "already_claimed"
 	NOT_CLAIMED_ERROR     = "not_claimed"
+	INVALID_MOVE          = "invalid_move"
 )
 
 func removeFromSlice(key string, arr []string) []string {
