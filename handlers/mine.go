@@ -3,7 +3,7 @@ package handlers
 import (
 	"math"
 
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
 // Mine extracts some resources from a given node.

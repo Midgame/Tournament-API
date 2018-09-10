@@ -3,8 +3,8 @@ package handlers_test
 import (
 	"testing"
 
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/handlers"
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+	"github.com/HeadlightLabs/Tournament-API/handlers"
+	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
 func TestMine(t *testing.T) {

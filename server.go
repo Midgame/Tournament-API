@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/handlers"
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+	"github.com/HeadlightLabs/Tournament-API/handlers"
+	"github.com/HeadlightLabs/Tournament-API/structs"
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
@@ -150,6 +151,11 @@ func (s *Server) moveHandler(w http.ResponseWriter, r *http.Request) {
 	glog.Flush()
 }
 
+// Redirects to the documentation page, so anyone hitting this page through a browser gets more information
+func (s *Server) redirectHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "http://docs.headlightlabs.com", 302)
+}
+
 // Initializes the server with some defaults
 func (s *Server) Initialize() {
 	s.Grid = structs.Grid{}
@@ -166,6 +172,7 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/mine", s.mineHandler).Methods("POST")
 	s.Router.HandleFunc("/scan", s.scanHandler).Methods("POST")
 	s.Router.HandleFunc("/move", s.moveHandler).Methods("POST")
+	s.Router.HandleFunc("/", s.redirectHandler).Methods("GET")
 }
 
 func (s *Server) Run() {
@@ -174,5 +181,5 @@ func (s *Server) Run() {
 
 	glog.Info("Starting on port ", port)
 	glog.Flush()
-	http.ListenAndServe(port, s.Router)
+	http.ListenAndServe(":"+port, s.Router)
 }

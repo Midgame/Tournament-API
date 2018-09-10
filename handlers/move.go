@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
 // Move determines if a move is valid for a given callsign, and updates the bot's location if so (and returns the new location)

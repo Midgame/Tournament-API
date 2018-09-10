@@ -3,7 +3,7 @@ package structs_test
 import (
 	"testing"
 
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
 func TestNumberWithinRange(t *testing.T) {

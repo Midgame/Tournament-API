@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/HeadlightLabs/Tournament-API/sept-2018/structs"
+	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
 const (
