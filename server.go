@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -19,6 +18,7 @@ import (
 type Server struct {
 	Router *mux.Router
 	Grid   structs.Grid
+	HTTP   *http.Server
 }
 
 // Logs the response and the original parameters just for thoroughness
@@ -162,6 +162,11 @@ func (s *Server) Initialize() {
 	s.Grid.Initialize()
 	s.Router = mux.NewRouter()
 	s.initializeRoutes()
+	port := os.Getenv("PORT")
+	s.HTTP = &http.Server{
+		Addr:    ":" + port,
+		Handler: s.Router,
+	}
 }
 
 // Initializes all the routes
@@ -177,9 +182,18 @@ func (s *Server) initializeRoutes() {
 
 func (s *Server) Run() {
 	port := os.Getenv("PORT")
-	flag.Parse()
-
 	glog.Info("Starting on port ", port)
 	glog.Flush()
-	http.ListenAndServe(":"+port, s.Router)
+	go func() {
+		if err := s.HTTP.ListenAndServe(); err != nil {
+			glog.Infof("Server error: %s", err)
+		}
+	}()
+}
+
+func (s *Server) Shutdown() error {
+	err := s.HTTP.Shutdown(nil)
+	s.HTTP = nil
+	s.Router = nil
+	return err
 }
