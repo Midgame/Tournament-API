@@ -110,7 +110,7 @@ func (s *Server) mineHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := handlers.Mine(req, s.Grid.Nodes, s.Grid.Bots)
+	response := handlers.Mine(req, s.Grid.Nodes, s.Grid.Bots, s.Grid)
 	LogResponse(response, "MINE")
 	json.NewEncoder(w).Encode(response)
 	glog.Flush()
