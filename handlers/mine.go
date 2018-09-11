@@ -9,7 +9,7 @@ import (
 // Mine extracts some resources from a given node.
 // The amount extracted is deducted from the node, given to the bot, and returned in the response.
 // The response "Error" flag will be set to true if the callsign doesn't own this node
-func Mine(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[string]structs.Bot) structs.StatusResponse {
+func Mine(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[string]structs.Bot, grid structs.Grid) structs.StatusResponse {
 
 	resp := CheckParams(req, nodes, bots, true)
 	if resp.Error {
@@ -18,10 +18,10 @@ func Mine(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[str
 	bot := bots[req.Callsign]
 	node := nodes[req.NodeId]
 
-	// If this node is owned by someone else or unowned, return an error except in debug mode
-	if node.ClaimedBy != req.Callsign {
+	err := grid.CheckMineValidity(node, bot)
+	if err != "" {
 		resp.Error = true
-		resp.ErrorMsg = ALREADY_CLAIMED_ERROR
+		resp.ErrorMsg = err
 		return resp
 	}
 

@@ -5,12 +5,12 @@ import (
 )
 
 const (
-	CALLSIGN_INVALID      = "callsign_invalid"
-	BOT_NOT_FOUND_ERROR   = "bot_not_found"
-	NODE_NOT_FOUND_ERROR  = "node_not_found"
 	ALREADY_CLAIMED_ERROR = "already_claimed"
-	NOT_CLAIMED_ERROR     = "not_claimed"
+	BOT_NOT_FOUND_ERROR   = "bot_not_found"
+	CALLSIGN_INVALID      = "callsign_invalid"
 	INVALID_MOVE          = "invalid_move"
+	NODE_NOT_FOUND_ERROR  = "node_not_found"
+	NOT_CLAIMED_ERROR     = "not_claimed"
 )
 
 func removeFromSlice(key string, arr []string) []string {

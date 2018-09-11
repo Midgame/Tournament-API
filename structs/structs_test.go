@@ -174,9 +174,131 @@ func TestRandomInitVals(t *testing.T) {
 	if x == y {
 		t.Errorf("Extremely unlikely that x and y would be the same.")
 	}
+}
+
+func TestCheckMineValidity(t *testing.T) {
+	grid := structs.Grid{}
+	grid.Width = 100
+	grid.Height = 100
+
+	alpha := createBot("alpha", 5, 5, []string{})
+	gamma := createNode("gamma", 5, 6, "beta")
+	epsilon := createNode("epsilon", 13, 13, "alpha")
+	theta := createNode("epsilon", 13, 13, "delta")
+	delta := createBot("delta", 18, 18, []string{"theta"})
+
+	tt := []struct {
+		bot      structs.Bot
+		node     structs.Node
+		expError string
+	}{
+		{alpha, gamma, "already_claimed"}, // Node claimed by someone else
+		{alpha, epsilon, "too_far_away"},  // Not within scan range
+		{delta, theta, ""},                // Happy path
+	}
+
+	for _, tc := range tt {
+		actual := grid.CheckMineValidity(tc.node, tc.bot)
+		if tc.expError != actual {
+			t.Errorf("CheckMineValidity didn't return expected error: %s, Actual: %s. TC: %v", tc.expError, actual, tc)
+		}
+	}
+
+}
+
+func TestCheckClaimValidity(t *testing.T) {
+	grid := structs.Grid{}
+	grid.Width = 100
+	grid.Height = 100
+
+	alpha := createBot("alpha", 5, 5, []string{})
+	gamma := createNode("gamma", 5, 6, "beta")
+	beta := createBot("beta", 10, 10, []string{"gamma", "zeta", "iota"})
+	epsilon := createNode("epsilon", 13, 13, "")
+	delta := createBot("delta", 18, 18, []string{})
+
+	tt := []struct {
+		bot      structs.Bot
+		node     structs.Node
+		expError string
+	}{
+		{alpha, gamma, "already_claimed"},  // Node claimed by someone else
+		{beta, epsilon, "too_many_claims"}, // Bot has too many claims
+		{alpha, epsilon, "too_far_away"},   // Not within scan range
+		{delta, epsilon, ""},               // Happy path
+	}
+
+	for _, tc := range tt {
+		actual := grid.CheckClaimValidity(tc.node, tc.bot)
+		if tc.expError != actual {
+			t.Errorf("CheckClaimValidity didn't return expected error: %s, Actual: %s. TC: %v", tc.expError, actual, tc)
+		}
+	}
 
 }
 
 func TestScannableByBot(t *testing.T) {
-	t.Errorf("Not implemented yet")
+	grid := structs.Grid{}
+	grid.Width = 100
+	grid.Height = 100
+
+	alpha := createBot("alpha", 0, 0, []string{})
+	delta := createBot("delta", 18, 18, []string{})
+	omega := createBot("omega", 19, 19, []string{})
+
+	gamma := createNode("gamma", 0, 1, "beta")
+	epsilon := createNode("epsilon", 13, 13, "")
+	theta := createNode("theta", 100, 100, "")
+	psi := createNode("psi", 0, 0, "")
+
+	tt := []struct {
+		bot       structs.Bot
+		node      structs.Node
+		expResult bool
+	}{
+		{alpha, epsilon, false}, // Not anywhere close
+		{alpha, gamma, true},    // Next to the node
+		{delta, epsilon, true},  // Just within range
+		{omega, epsilon, false}, // Just out of range
+		{alpha, theta, false},   // Overlapped should return false
+		{alpha, psi, true},      // On top of node should return true
+	}
+
+	for _, tc := range tt {
+		actual := grid.ScannableByBot(tc.node, tc.bot)
+		if tc.expResult != actual {
+			t.Errorf("ScannableByBot didn't return expected reult: %v, Actual: %v. TC: %v", tc.expResult, actual, tc)
+		}
+	}
+}
+
+func createBot(uuid string, x int, y int, claims []string) structs.Bot {
+	bot := structs.Bot{
+		GridEntity: structs.GridEntity{
+			Id:   uuid,
+			Type: structs.BOT,
+			Location: structs.GridLocation{
+				X: x,
+				Y: y,
+			},
+		},
+		Claims: claims,
+	}
+	return bot
+}
+
+func createNode(uuid string, x int, y int, claimedBy string) structs.Node {
+	node := structs.Node{
+		GridEntity: structs.GridEntity{
+			Id:   uuid,
+			Type: structs.NODE,
+			Location: structs.GridLocation{
+				X: x,
+				Y: y,
+			},
+		},
+		ClaimedBy: claimedBy,
+		Value:     1,
+	}
+	return node
 }

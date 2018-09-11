@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	RESTART_LENGTH  = 15 * time.Minute
-	SHUTDOWN_LENGTH = 10 * time.Second
+	RESTART_LENGTH  = 50000 * time.Second
+	SHUTDOWN_LENGTH = 1 * time.Second
 )
 
 func main() {

@@ -8,7 +8,7 @@ import (
 // If this node is currently owned by another bot, returns Success: false.
 // If this node does not exist, returns Error: true.
 // Returns a success otherwise.
-func Claim(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[string]structs.Bot) structs.StatusResponse {
+func Claim(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[string]structs.Bot, grid structs.Grid) structs.StatusResponse {
 
 	resp := CheckParams(req, nodes, bots, true)
 	if resp.Error {
@@ -22,10 +22,10 @@ func Claim(req structs.SimpleRequest, nodes map[string]structs.Node, bots map[st
 		return resp
 	}
 
-	// If this node is owned by someone else, return
-	if node.ClaimedBy != "" && node.ClaimedBy != req.Callsign {
+	err := grid.CheckClaimValidity(node, bot)
+	if err != "" {
 		resp.Error = true
-		resp.ErrorMsg = ALREADY_CLAIMED_ERROR
+		resp.ErrorMsg = err
 		return resp
 	}
 

@@ -62,7 +62,6 @@ func TestMine(t *testing.T) {
 }
 
 func TestMove(t *testing.T) {
-	// TODO: If we introduce wraparound, this doesn't test that
 	grid := structs.Grid{}
 	grid.Initialize()
 
@@ -201,6 +200,10 @@ func TestRelease(t *testing.T) {
 }
 
 func TestClaim(t *testing.T) {
+	grid := structs.Grid{}
+	grid.Width = 100
+	grid.Height = 100
+
 	knownBots := make(map[string]structs.Bot)
 	knownBots["alpha"] = createBot("alpha", []string{"gamma"})
 	knownBots["beta"] = createBot("beta", []string{"delta"})
@@ -214,7 +217,7 @@ func TestClaim(t *testing.T) {
 		Callsign: "alpha",
 		NodeId:   "epsilon",
 	}
-	unclaimedResult := handlers.Claim(unclaimedReq, knownNodes, knownBots)
+	unclaimedResult := handlers.Claim(unclaimedReq, knownNodes, knownBots, grid)
 	if unclaimedResult.Error {
 		t.Errorf("Trying to claim an unclaimed node should result in success")
 	}
@@ -230,7 +233,7 @@ func TestClaim(t *testing.T) {
 		NodeId:   "delta",
 	}
 
-	handlers.Claim(claimedReq, knownNodes, knownBots)
+	handlers.Claim(claimedReq, knownNodes, knownBots, grid)
 	if knownNodes["delta"].ClaimedBy != "beta" {
 		t.Errorf("Trying to claim a node claimed by someone else should result in failure")
 	}
@@ -245,7 +248,7 @@ func TestClaim(t *testing.T) {
 		Callsign: "alpha",
 		NodeId:   "epsilon",
 	}
-	alreadyClaimedResult := handlers.Claim(alreadyClaimedReq, knownNodes, knownBots)
+	alreadyClaimedResult := handlers.Claim(alreadyClaimedReq, knownNodes, knownBots, grid)
 	if alreadyClaimedResult.Error {
 		t.Errorf("Trying to claim a node already claimed should result in success")
 	}
@@ -259,20 +262,61 @@ func TestClaim(t *testing.T) {
 }
 
 func TestScan(t *testing.T) {
-	// Test cases:
-	// 1) node too far to the right
-	// 2) node too far to the left
-	// 3) node too far up
-	// 4) node too far down
-	// 5) node too far up but within left/right range
-	// 6) node too far left but within up/down range
-	// 9) node on left edge, before/after overlap (but within range)
-	// 10) node on right edge, before/after overlap (but within range)
-	// 11) node on top edge, before/after overlap (but within range)
-	// 12) node on bottom edge, before/after overlap (within range)
-	// 13) node on left/right/top/bottom edge, after overlap (not within range)
-	// 14) node on right edge, just within scan range (exactly 5 units away)
-	t.Errorf("Not yet implemented")
+	grid := structs.Grid{}
+	grid.Width = 100
+	grid.Height = 100
+
+	createNodeWithLocation := func(id string, x int, y int) structs.Node {
+		node := createNode(id, "")
+		node.Location = structs.GridLocation{
+			X: x,
+			Y: y,
+		}
+		return node
+	}
+
+	alpha := createBot("alpha", []string{})
+	alpha.Location = structs.GridLocation{
+		X: 10,
+		Y: 10,
+	}
+	nodes := make(map[string]structs.Node)
+	bots := make(map[string]structs.Bot)
+	bots["alpha"] = alpha
+
+	req := structs.SimpleRequest{
+		Callsign: "alpha",
+	}
+
+	tt := []struct {
+		x          int
+		y          int
+		expResults int
+	}{
+		{16, 10, 0},
+		{4, 10, 0},
+		{10, 16, 0},
+		{10, 4, 0},
+		{5, 10, 1},
+		{15, 10, 1},
+		{10, 15, 1},
+		{10, 5, 1},
+		{5, 5, 1},
+		{100, 100, 0},
+		{15, 15, 1},
+		{16, 16, 0},
+		{4, 4, 0},
+	}
+
+	for _, tc := range tt {
+		node := createNodeWithLocation("gamma", tc.x, tc.y)
+		nodes["gamma"] = node
+		res := handlers.Scan(req, nodes, bots, grid)
+		if len(res.Nodes) != tc.expResults {
+			t.Errorf("Scan didn't return expected results. Expected: %d, Got: %d. TC: %v", tc.expResults, len(res.Nodes), tc)
+		}
+	}
+
 }
 
 /**

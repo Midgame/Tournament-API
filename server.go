@@ -83,7 +83,7 @@ func (s *Server) claimHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := handlers.Claim(req, s.Grid.Nodes, s.Grid.Bots)
+	response := handlers.Claim(req, s.Grid.Nodes, s.Grid.Bots, s.Grid)
 	LogResponse(response, "CLAIM")
 	json.NewEncoder(w).Encode(response)
 	glog.Flush()

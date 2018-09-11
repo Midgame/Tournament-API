@@ -22,6 +22,7 @@ const (
 	GRID_HEIGHT     = 100
 	NUMBER_OF_NODES = 80
 	MAX_NODE_VALUE  = 20
+	MAX_CLAIMS      = 3
 )
 
 type GridEntity struct {
@@ -42,11 +43,8 @@ type GridLocation struct {
 	Y int
 }
 
-// Determines if a number is within a certain distance of a value. Accounts for wrapping around
-// (hence the maxValue param) in either direction.
+// Determines if a number is within a certain distance of a value.
 func NumberWithinRange(value int, distance int, maxValue int, testValue int) bool {
-	// TODO: This doesn't cover wraparound
-
 	minDist := int(math.Max(0, float64(value-distance)))
 	maxDist := int(math.Min(float64(value+distance), float64(maxValue)))
 
@@ -74,6 +72,45 @@ func (grid Grid) ScannableByBot(node Node, bot Bot) bool {
 		NumberWithinRange(bot.Location.Y, SCAN_RANGE, grid.Height, node.Location.Y)
 }
 
+// CheckMineValidity ensures that a bot that wants to mine a node is allowed to
+func (grid Grid) CheckMineValidity(node Node, bot Bot) string {
+	// If this node is owned by someone else or unowned, return an error except in debug mode
+	if node.ClaimedBy != bot.Id {
+		return "already_claimed"
+	}
+
+	// If this bot isn't within scan range of this node, return an error
+	if !grid.ScannableByBot(node, bot) {
+		return "too_far_away"
+	}
+
+	return ""
+}
+
+// CheckClaimValidity ensures that a claim on a node by a bot is valid.
+func (grid Grid) CheckClaimValidity(node Node, bot Bot) string {
+
+	// If this node is owned by someone else, return an error
+	if node.ClaimedBy != "" && node.ClaimedBy != bot.Id {
+		return "already_claimed"
+	}
+
+	// If this bot has too many claims already, return an error
+	if len(bot.Claims) >= MAX_CLAIMS {
+		return "too_many_claims"
+	}
+
+	// If this bot isn't within scan range of this node, return an error
+	if !grid.ScannableByBot(node, bot) {
+		return "too_far_away"
+	}
+
+	// Happy claim!
+	return ""
+}
+
+// MoveBot returns a new location for the bot - this may be the same location if the requested
+// coordinates are invalid!
 func (grid Grid) MoveBot(bot Bot, x int, y int) GridLocation {
 	// Is this a valid move for the bot?
 	validMove := NumberWithinRange(bot.Location.X, 1, grid.Width, x) &&
