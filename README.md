@@ -16,6 +16,6 @@ or by cloning this repository into the above folder.
 ## To run
 
 ```bash
-cd $GOPATH/github.com/HeadlightLabs/Tournament-API
+cd $GOPATH/src/github.com/HeadlightLabs/Tournament-API
 ./run.sh
 ```
