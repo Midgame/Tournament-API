@@ -182,6 +182,9 @@ func TestRelease(t *testing.T) {
 	// Trying to release someone else's node should result in error and not affect the other bot
 	unownedReq := structs.SimpleRequest{Callsign: "alpha", NodeId: "delta"}
 	unownedResult := handlers.Release(unownedReq, knownNodes, knownBots)
+	if !knownNodes["delta"].GetStatus().Claimed {
+		t.Errorf("Bad release released claimed on node somehow")
+	}
 	if len(knownBots["beta"].Claims) != 1 || len(knownBots["alpha"].Claims) != 2 {
 		t.Errorf("Node owned by other bot somehow mutated requesting bots claims")
 	}
@@ -190,6 +193,9 @@ func TestRelease(t *testing.T) {
 	}
 
 	// Trying to release your own node should result only in that node being released
+	if !knownNodes["epsilon"].GetStatus().Claimed {
+		t.Errorf("Claimed node isn't displaying as claimed")
+	}
 	validReq := structs.SimpleRequest{Callsign: "alpha", NodeId: "epsilon"}
 	validResult := handlers.Release(validReq, knownNodes, knownBots)
 	if validResult.Error {
@@ -198,6 +204,9 @@ func TestRelease(t *testing.T) {
 	if len(knownBots["alpha"].Claims) > 1 || knownNodes["epsilon"].ClaimedBy != "" {
 		t.Errorf("Valid node somehow didn't release claim. Bot claims: %d, Node claimed by: %s",
 			len(knownBots["alpha"].Claims), knownNodes["epsilon"].ClaimedBy)
+	}
+	if knownNodes["epsilon"].GetStatus().Claimed {
+		t.Errorf("Released node didn't update claimed status")
 	}
 
 }
@@ -220,6 +229,10 @@ func TestClaim(t *testing.T) {
 		Callsign: "alpha",
 		NodeId:   "epsilon",
 	}
+	if knownNodes["epsilon"].GetStatus().Claimed {
+		t.Errorf("Claiming node didn't set node's claimed status to true")
+	}
+
 	unclaimedResult := handlers.Claim(unclaimedReq, knownNodes, knownBots, grid)
 	if unclaimedResult.Error {
 		t.Errorf("Trying to claim an unclaimed node should result in success")
@@ -229,6 +242,9 @@ func TestClaim(t *testing.T) {
 	}
 	if knownNodes["epsilon"].ClaimedBy != "alpha" {
 		t.Errorf("Claiming node didn't add claim to node's property")
+	}
+	if !knownNodes["epsilon"].GetStatus().Claimed {
+		t.Errorf("Claiming node didn't set node's claimed status to true")
 	}
 
 	claimedReq := structs.SimpleRequest{
