@@ -4,6 +4,10 @@
 
 You'll need to have the [Go Language](https://www.golang.org) installed.
 
+**Make sure you have the latest version installed (1.11)**
+
+**If `echo $GOPATH` doesn't return anything, Go is not installed correctly!**
+
 ## To install
 
 You should be able to install it by doing the following:
