@@ -8,6 +8,9 @@ import (
 )
 
 func TestMine(t *testing.T) {
+	grid := structs.Grid{}
+	grid.Width = 100
+	grid.Height = 100
 
 	knownBots := make(map[string]structs.Bot)
 	knownBots["alpha"] = createBot("alpha", []string{"gamma"})
@@ -45,7 +48,7 @@ func TestMine(t *testing.T) {
 
 	for _, tc := range tt {
 		req := makeReq(tc.callsign, tc.node)
-		actual := handlers.Mine(req, knownNodes, knownBots)
+		actual := handlers.Mine(req, knownNodes, knownBots, grid)
 		if tc.errorExp {
 			if !actual.Error {
 				t.Errorf("[Mine] Error expected but not given. Actual result: %v", actual)
