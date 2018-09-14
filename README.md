@@ -2,7 +2,7 @@
 
 ## Pre-requisites
 
-You'll need to have the [https://www.golang.org](Go Language) installed.
+You'll need to have the [Go Language](https://www.golang.org) installed.
 
 ## To install
 
