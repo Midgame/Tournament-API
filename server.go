@@ -156,6 +156,18 @@ func (s *Server) redirectHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "http://docs.headlightlabs.com", 302)
 }
 
+func (s *Server) botsHandler(w http.ResponseWriter, r *http.Request) {
+	response := handlers.Bots(s.Grid.Bots)
+	json.NewEncoder(w).Encode(response)
+	glog.Flush()
+}
+
+func (s *Server) nodesHandler(w http.ResponseWriter, r *http.Request) {
+	response := handlers.Nodes(s.Grid.Nodes)
+	json.NewEncoder(w).Encode(response)
+	glog.Flush()
+}
+
 // Initializes the server with some defaults
 func (s *Server) Initialize() {
 	s.Grid = structs.Grid{}
@@ -171,6 +183,7 @@ func (s *Server) Initialize() {
 
 // Initializes all the routes
 func (s *Server) initializeRoutes() {
+	// Original tournament routes
 	s.Router.HandleFunc("/register", s.registrationHandler).Methods("POST")
 	s.Router.HandleFunc("/claim", s.claimHandler).Methods("POST")
 	s.Router.HandleFunc("/release", s.releaseHandler).Methods("POST")
@@ -178,6 +191,10 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/scan", s.scanHandler).Methods("POST")
 	s.Router.HandleFunc("/move", s.moveHandler).Methods("POST")
 	s.Router.HandleFunc("/", s.redirectHandler).Methods("GET")
+
+	// New tournament routes
+	s.Router.HandleFunc("/bots", s.botsHandler).Methods("GET")
+	s.Router.HandleFunc("/nodes", s.nodesHandler).Methods("GET")
 }
 
 func (s *Server) Run() {
