@@ -4,7 +4,7 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
-func Nodes(nodes map[string]structs.Node) []structs.NodeStatus {
+func Nodes(nodes map[string]structs.Node) map[string][]structs.NodeStatus {
 
 	response := []structs.NodeStatus{}
 
@@ -12,5 +12,7 @@ func Nodes(nodes map[string]structs.Node) []structs.NodeStatus {
 		response = append(response, node.GetStatus())
 	}
 
-	return response
+	responseMap := make(map[string][]structs.NodeStatus)
+	responseMap["Nodes"] = response
+	return responseMap
 }

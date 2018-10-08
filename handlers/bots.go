@@ -4,7 +4,7 @@ import (
 	"github.com/HeadlightLabs/Tournament-API/structs"
 )
 
-func Bots(bots map[string]structs.Bot) []structs.BotStatus {
+func Bots(bots map[string]structs.Bot) map[string][]structs.BotStatus {
 
 	response := []structs.BotStatus{}
 
@@ -12,5 +12,7 @@ func Bots(bots map[string]structs.Bot) []structs.BotStatus {
 		response = append(response, bot.GetStatus())
 	}
 
-	return response
+	responseMap := make(map[string][]structs.BotStatus)
+	responseMap["Bots"] = response
+	return responseMap
 }
