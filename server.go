@@ -158,12 +158,16 @@ func (s *Server) redirectHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) botsHandler(w http.ResponseWriter, r *http.Request) {
 	response := handlers.Bots(s.Grid.Bots)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	json.NewEncoder(w).Encode(response)
 	glog.Flush()
 }
 
 func (s *Server) nodesHandler(w http.ResponseWriter, r *http.Request) {
 	response := handlers.Nodes(s.Grid.Nodes)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	json.NewEncoder(w).Encode(response)
 	glog.Flush()
 }
