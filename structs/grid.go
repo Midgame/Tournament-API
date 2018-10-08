@@ -18,9 +18,9 @@ const (
 
 const (
 	SCAN_RANGE      = 5
-	GRID_WIDTH      = 100
-	GRID_HEIGHT     = 100
-	NUMBER_OF_NODES = 80
+	GRID_WIDTH      = 20
+	GRID_HEIGHT     = 20
+	NUMBER_OF_NODES = 50
 	MAX_NODE_VALUE  = 20
 	MAX_CLAIMS      = 3
 )
