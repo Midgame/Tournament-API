@@ -193,8 +193,8 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/", s.redirectHandler).Methods("GET")
 
 	// New tournament routes
-	s.Router.HandleFunc("/bots", s.botsHandler).Methods("GET")
-	s.Router.HandleFunc("/nodes", s.nodesHandler).Methods("GET")
+	s.Router.HandleFunc("/bots", s.botsHandler).Methods("GET", "OPTIONS")
+	s.Router.HandleFunc("/nodes", s.nodesHandler).Methods("GET", "OPTIONS")
 }
 
 func (s *Server) Run() {
