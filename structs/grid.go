@@ -17,7 +17,7 @@ const (
 )
 
 const (
-	SCAN_RANGE      = 5
+	SCAN_RANGE      = 2
 	GRID_WIDTH      = 19
 	GRID_HEIGHT     = 19
 	NUMBER_OF_NODES = 50
