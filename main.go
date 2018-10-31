@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	RESTART_LENGTH  = 50000 * time.Second
+	RESTART_LENGTH  = 900 * time.Second
 	SHUTDOWN_LENGTH = 1 * time.Second
 )
 
